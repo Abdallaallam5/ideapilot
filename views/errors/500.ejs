@@ -1,0 +1,8 @@
+<section class="container error-page text-center py-5">
+  <div class="error-code">500</div>
+  <h1 class="h3"><%= __('Something went wrong') %></h1>
+  <p class="text-muted mx-auto" style="max-width: 32rem;"><%= typeof message !== 'undefined' && message ? __(message) : __("An unexpected error occurred.") %></p>
+  <div class="d-flex justify-content-center gap-2 mt-4">
+    <% if (currentUser) { %><a class="btn btn-primary" href="/dashboard"><%= __('Go to dashboard') %></a><% } else { %><a class="btn btn-primary" href="/"><%= __('Go to home page') %></a><% } %>
+  </div>
+</section>

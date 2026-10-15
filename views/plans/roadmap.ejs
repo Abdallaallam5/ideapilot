@@ -1,0 +1,183 @@
+<% pageScripts.push('/static/js/tasks.js') %>
+<div class="ws-page" data-roadmap data-project-id="<%= project._id %>">
+  <div class="ws-page-head">
+    <div>
+      <h1><%= __(plan.title) %> <span class="source-tag align-middle">v<%= plan.version %></span></h1>
+      <p><%= plan.objective || __('No objective set yet.') %></p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <button class="btn btn-light btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#planMeta" aria-expanded="false" aria-controls="planMeta"><i data-lucide="pencil" class="icon-sm"></i> <%= __('Edit plan details') %></button>
+      <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#versionModal"><i data-lucide="git-commit" class="icon-sm"></i> <%= __('Save as new version') %></button>
+      <% if (aiStatus.enabled) { %>
+        <form action="/projects/<%= project._id %>/ai/roadmap" method="post" data-ai-inline>
+          <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+          <button class="btn btn-copilot btn-sm" type="submit"><i data-lucide="sparkles" class="icon-sm"></i> <%= __('Draft roadmap with AI') %></button>
+        </form>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="collapse mb-3" id="planMeta">
+    <form class="panel panel-body" action="/projects/<%= project._id %>/plan/update" method="post">
+      <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+      <div class="row g-3">
+        <div class="col-md-5"><label class="form-label" for="planTitle"><%= __('Plan title') %></label><input class="form-control" id="planTitle" name="title" value="<%= plan.title %>" maxlength="140" required></div>
+        <div class="col-md-7"><label class="form-label" for="planObjective"><%= __('Objective') %></label><input class="form-control" id="planObjective" name="objective" value="<%= plan.objective %>" maxlength="2000"></div>
+      </div>
+      <div class="d-flex justify-content-end mt-3"><button class="btn btn-primary btn-sm" type="submit"><%= __('Save plan details') %></button></div>
+    </form>
+  </div>
+
+  <div class="panel panel-body mb-3 d-flex flex-wrap align-items-center gap-4">
+    <div class="flex-grow-1" style="min-width: 220px">
+      <div class="d-flex justify-content-between small fw-semibold mb-1"><span><%= __('Overall progress') %></span><span data-progress-text><%= __('{done} of {total} tasks', { done: progress.completed, total: progress.total }) %> · <%= progress.percent %>%</span></div>
+      <div class="progress" style="height: 8px" role="progressbar" aria-label="<%= __('Overall progress') %>" aria-valuenow="<%= progress.percent %>" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" data-progress-bar style="width: <%= progress.percent %>%"></div></div>
+    </div>
+    <div class="small text-muted d-flex gap-3 flex-wrap">
+      <span><strong class="text-body"><%= phases.length %></strong> <%= __('phases') %></span>
+      <span><strong class="text-body"><%= phases.reduce(function (n, p) { return n + p.phase.milestones.length; }, 0) %></strong> <%= __('milestones') %></span>
+      <span><strong class="text-body"><%= allTasks.filter(function (t) { return t.isBlocked && t.status !== 'completed'; }).length %></strong> <%= __('blocked or waiting') %></span>
+      <span><strong class="text-body"><%= allTasks.filter(function (t) { return t.isOverdue; }).length %></strong> <%= __('overdue') %></span>
+    </div>
+  </div>
+
+  <% if (!phases.length && !unphased.length) { %>
+    <div class="empty-state mb-3">
+      <div class="empty-illustration" aria-hidden="true"><i data-lucide="milestone"></i></div>
+      <h2 class="h5"><%= __('No phases yet') %></h2>
+      <p class="text-muted mx-auto"><%= __('Break your plan into phases, such as “Research”, “Build” and “Launch”, then add milestones and tasks to each one.') %><%= aiStatus.enabled ? ' ' + __('Or let the AI copilot draft a roadmap for you to review.') : '' %></p>
+    </div>
+  <% } %>
+
+  <% phases.forEach(function (row, idx) { const p = row.phase; %>
+    <section class="panel phase-card" id="phase-<%= p._id %>" aria-labelledby="phase-title-<%= p._id %>">
+      <div class="phase-head">
+        <div class="d-flex gap-3 align-items-start flex-grow-1" style="min-width: 0">
+          <span class="phase-index"><%= idx + 1 %></span>
+          <div style="min-width: 0">
+            <h2 class="h5 mb-1" id="phase-title-<%= p._id %>"><%= p.title %></h2>
+            <% if (p.description) { %><p class="text-muted small mb-0"><%= p.description %></p><% } %>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <div class="phase-progress">
+            <div class="d-flex justify-content-between small text-muted mb-1"><span><%= row.progress.completed %>/<%= row.progress.total %></span><span><%= row.progress.percent %>%</span></div>
+            <div class="progress"><div class="progress-bar" style="width: <%= row.progress.percent %>%"></div></div>
+          </div>
+          <div class="btn-group">
+            <form action="/projects/<%= project._id %>/plan/phases/<%= p._id %>/move" method="post"><input type="hidden" name="_csrf" value="<%= csrfToken() %>"><input type="hidden" name="direction" value="up"><button class="btn btn-icon" type="submit" <%= idx === 0 ? 'disabled' : '' %> aria-label="<%= __('Move phase up') %>"><i data-lucide="arrow-up" class="icon-sm"></i></button></form>
+            <form action="/projects/<%= project._id %>/plan/phases/<%= p._id %>/move" method="post"><input type="hidden" name="_csrf" value="<%= csrfToken() %>"><input type="hidden" name="direction" value="down"><button class="btn btn-icon" type="submit" <%= idx === phases.length - 1 ? 'disabled' : '' %> aria-label="<%= __('Move phase down') %>"><i data-lucide="arrow-down" class="icon-sm"></i></button></form>
+            <button class="btn btn-icon" type="button" data-bs-toggle="collapse" data-bs-target="#edit-phase-<%= p._id %>" aria-label="<%= __('Edit phase') %>"><i data-lucide="pencil" class="icon-sm"></i></button>
+            <button class="btn btn-icon" type="button" aria-label="<%= __('Delete phase') %>" data-confirm="<%= __('Delete phase “{title}”? Its tasks are kept and moved to Unphased.', { title: p.title }) %>" data-confirm-form="#delete-phase-<%= p._id %>"><i data-lucide="trash-2" class="icon-sm"></i></button>
+          </div>
+          <form id="delete-phase-<%= p._id %>" class="d-none" action="/projects/<%= project._id %>/plan/phases/<%= p._id %>/delete" method="post"><input type="hidden" name="_csrf" value="<%= csrfToken() %>"></form>
+        </div>
+        <div class="collapse w-100" id="edit-phase-<%= p._id %>">
+          <form class="row g-2 pt-2" action="/projects/<%= project._id %>/plan/phases/<%= p._id %>/update" method="post">
+            <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+            <div class="col-md-4"><label class="visually-hidden" for="pt-<%= p._id %>"><%= __('Phase title') %></label><input class="form-control form-control-sm" id="pt-<%= p._id %>" name="title" value="<%= p.title %>" maxlength="140" required></div>
+            <div class="col-md-6"><label class="visually-hidden" for="pd-<%= p._id %>"><%= __('Phase description') %></label><input class="form-control form-control-sm" id="pd-<%= p._id %>" name="description" value="<%= p.description %>" maxlength="2000" placeholder="<%= __('Description') %>"></div>
+            <div class="col-md-2 d-grid"><button class="btn btn-primary btn-sm" type="submit"><%= __('Save') %></button></div>
+          </form>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="row g-4">
+          <div class="col-lg-4">
+            <h3 class="small text-uppercase text-muted fw-bold mb-2"><%= __('Milestones') %></h3>
+            <% if (!p.milestones.length) { %><p class="small text-muted"><%= __('No milestones yet.') %></p><% } %>
+            <% p.milestones.forEach(function (m) { %>
+              <div class="milestone-row <%= m.completed ? 'done' : '' %>">
+                <form action="/projects/<%= project._id %>/plan/phases/<%= p._id %>/milestones/<%= m._id %>/toggle" method="post" class="d-flex">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+                  <input type="hidden" name="completed" value="<%= m.completed ? 'false' : 'true' %>">
+                  <button class="status-toggle <%= m.completed ? 'done' : '' %>" type="submit" aria-label="<%= __(m.completed ? 'Mark milestone as not reached' : 'Mark milestone as reached') %>: <%= m.title %>"><i data-lucide="<%= m.completed ? 'check-circle-2' : 'flag' %>" class="<%= m.completed ? '' : 'ms-flag' %>"></i></button>
+                </form>
+                <div class="flex-grow-1 small">
+                  <span class="ms-title fw-semibold"><%= m.title %></span>
+                  <% if (m.dueDate) { %><span class="text-muted"> · <%= fmt.formatDate(m.dueDate) %></span><% } %>
+                  <% const msTasks = row.tasks.filter(function (t) { return String(t.milestoneId) === String(m._id); }); if (msTasks.length) { %><span class="text-muted"> · <%= msTasks.filter(function (t) { return t.status === 'completed'; }).length %>/<%= msTasks.length %> <%= __('tasks') %></span><% } %>
+                </div>
+                <form id="del-ms-<%= m._id %>" class="d-none" action="/projects/<%= project._id %>/plan/phases/<%= p._id %>/milestones/<%= m._id %>/delete" method="post"><input type="hidden" name="_csrf" value="<%= csrfToken() %>"></form>
+                <button class="btn btn-icon" type="button" aria-label="<%= __('Delete milestone') %>" data-confirm="<%= __('Delete milestone “{title}”?', { title: m.title }) %>" data-confirm-form="#del-ms-<%= m._id %>"><i data-lucide="x" class="icon-xs"></i></button>
+              </div>
+            <% }) %>
+            <details class="inline-add mt-2">
+              <summary><i data-lucide="plus" class="icon-sm"></i> <%= __('Add milestone') %></summary>
+              <form class="d-flex flex-column gap-2 mt-2" action="/projects/<%= project._id %>/plan/phases/<%= p._id %>/milestones" method="post">
+                <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+                <label class="visually-hidden" for="ms-<%= p._id %>"><%= __('Milestone title') %></label>
+                <input class="form-control form-control-sm" id="ms-<%= p._id %>" name="title" placeholder="<%= __('Milestone title') %>" maxlength="140" required>
+                <label class="small text-muted" for="msd-<%= p._id %>"><%= __('Target date (optional)') %></label>
+                <input class="form-control form-control-sm" type="date" id="msd-<%= p._id %>" name="dueDate">
+                <button class="btn btn-primary btn-sm" type="submit"><%= __('Add milestone') %></button>
+              </form>
+            </details>
+          </div>
+          <div class="col-lg-8">
+            <h3 class="small text-uppercase text-muted fw-bold mb-2"><%= __('Tasks') %></h3>
+            <div class="task-dropzone" data-dropzone data-phase-id="<%= p._id %>">
+              <% row.tasks.forEach(function (t) { %><%- include('_task-row', { t }) %><% }) %>
+            </div>
+            <% if (!row.tasks.length) { %><p class="small text-muted mb-1" data-empty-note><%= __('No tasks in this phase. Add one below or drag one here.') %></p><% } %>
+            <%- include('_quick-task', { phaseId: String(p._id) }) %>
+          </div>
+        </div>
+      </div>
+    </section>
+  <% }) %>
+
+  <% if (unphased.length) { %>
+    <section class="panel phase-card" aria-labelledby="unphased-title">
+      <div class="phase-head"><h2 class="h5 mb-0" id="unphased-title"><%= __('Unphased tasks') %></h2><span class="small text-muted"><%= __('{n} task(s) not in a phase. Drag them into a phase above.', { n: unphased.length }) %></span></div>
+      <div class="panel-body">
+        <div class="task-dropzone" data-dropzone data-phase-id="">
+          <% unphased.forEach(function (t) { %><%- include('_task-row', { t }) %><% }) %>
+        </div>
+        <%- include('_quick-task', { phaseId: null }) %>
+      </div>
+    </section>
+  <% } %>
+
+  <section class="panel panel-body" aria-labelledby="add-phase-title">
+    <h2 class="h6" id="add-phase-title"><i data-lucide="plus-square" class="icon-sm"></i> <%= __('Add a phase') %></h2>
+    <form class="row g-2" action="/projects/<%= project._id %>/plan/phases" method="post">
+      <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+      <div class="col-md-4"><label class="visually-hidden" for="newPhaseTitle"><%= __('Phase title') %></label><input class="form-control" id="newPhaseTitle" name="title" placeholder="<%= __('e.g. Research') %>" maxlength="140" required></div>
+      <div class="col-md-6"><label class="visually-hidden" for="newPhaseDesc"><%= __('Description') %></label><input class="form-control" id="newPhaseDesc" name="description" placeholder="<%= __('What happens in this phase? (optional)') %>" maxlength="2000"></div>
+      <div class="col-md-2 d-grid"><button class="btn btn-primary" type="submit"><%= __('Add phase') %></button></div>
+    </form>
+  </section>
+
+  <% const waiting = allTasks.filter(function (t) { return t.status !== 'completed' && (t.waitingOn.length || t.status === 'blocked'); }); if (waiting.length) { %>
+  <section class="panel mt-3" aria-labelledby="deps-title">
+    <div class="panel-head"><h2 id="deps-title"><i data-lucide="git-merge" class="icon-sm"></i> <%= __('Dependency review') %></h2><span class="small text-muted"><%= __('{n} task(s) cannot move forward yet', { n: waiting.length }) %></span></div>
+    <div class="panel-body">
+      <ul class="list-unstyled mb-0">
+        <% waiting.forEach(function (t) { %>
+          <li class="mb-2">
+            <a class="fw-semibold" href="/projects/<%= project._id %>/tasks/<%= t.id %>/edit"><%= t.title %></a>
+            <% if (t.status === 'blocked') { %><span class="status-badge status-blocked ms-1"><%= __('Blocked') %></span><% if (t.blockedReason) { %><span class="small text-muted"> · <%= t.blockedReason %></span><% } %><% } %>
+            <% if (t.waitingOn.length) { %><div class="small text-muted"><%= __('Waiting on:') %> <% t.waitingOn.forEach(function (w, i) { %><a href="/projects/<%= project._id %>/tasks/<%= w.id %>/edit"><%= w.title %></a><%= i < t.waitingOn.length - 1 ? ', ' : '' %><% }) %></div><% } %>
+          </li>
+        <% }) %>
+      </ul>
+    </div>
+  </section>
+  <% } %>
+</div>
+
+<div class="modal fade" id="versionModal" tabindex="-1" aria-labelledby="versionModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content text-body" action="/projects/<%= project._id %>/plan/versions" method="post">
+      <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+      <div class="modal-header"><h2 class="modal-title fs-5" id="versionModalTitle"><%= __('Save plan as a new version') %></h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<%= __('Close') %>"></button></div>
+      <div class="modal-body">
+        <p class="small text-muted"><%= __('The current plan (version {v}) and all of its tasks are frozen in History, where you can view or restore them later. You keep editing version {next}.', { v: plan.version, next: plan.version + 1 }) %></p>
+        <label class="form-label" for="changeSummary"><%= __('What changed, or why are you saving?') %></label>
+        <textarea class="form-control" id="changeSummary" name="changeSummary" rows="3" maxlength="2000" required placeholder="<%= __('e.g. Agreed scope with the team before starting Phase 2') %>"></textarea>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal"><%= __('Cancel') %></button><button class="btn btn-primary" type="submit"><%= __('Save version') %></button></div>
+    </form>
+  </div>
+</div>

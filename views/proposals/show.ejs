@@ -1,0 +1,168 @@
+<%
+  const p = proposal.payload;
+  const pending = proposal.status === 'pending';
+  const dis = pending ? '' : 'disabled';
+  const sectionLabels = { summary: 'Summary', goals: 'Goals', coreComponents: 'Core components', assumptions: 'Assumptions', risks: 'Risks', unknowns: 'Unknowns', opportunities: 'Opportunities', nextSteps: 'Next steps' };
+%>
+<div class="ws-page">
+  <a class="back-link" href="/projects/<%= project._id %>/history#proposals"><i data-lucide="arrow-left" class="icon-sm"></i> <%= __('History') %></a>
+  <div class="ws-page-head mt-2">
+    <div>
+      <h1 class="d-flex align-items-center gap-2 flex-wrap"><%= __(proposal.title) %>
+        <span class="status-badge <%= proposal.status === 'accepted' ? 'status-completed' : proposal.status === 'rejected' ? 'status-blocked' : 'status-in_progress' %>"><%= pending ? __('Waiting for review') : fmt.label(proposal.status) %></span>
+      </h1>
+      <p><%= __(proposal.origin === 'ai' ? 'Suggested by the AI copilot' : 'Computed by IdeaPilot from your map and tasks') %> · <%= fmt.formatDateTime(proposal.createdAt) %></p>
+    </div>
+  </div>
+
+  <% if (pending) { %>
+    <div class="alert alert-warning d-flex gap-2"><i data-lucide="shield-check" class="icon-sm mt-1"></i><div><%= __('Nothing has changed yet. Choose the items you want, then apply them.') %> <%= ['roadmap', 'tasks', 'replan'].includes(proposal.kind) ? __('Your current plan is saved as a version first, so you can restore it from History.') : '' %></div></div>
+  <% } else if (proposal.appliedSummary) { %>
+    <div class="alert alert-success"><%= __(proposal.appliedSummary) %></div>
+  <% } %>
+
+  <% if (proposal.summary) { %>
+    <div class="panel panel-body mb-3"><h2 class="h6"><%= __(proposal.kind === 'replan' ? 'Impact' : 'Why') %></h2><p class="mb-0" style="white-space: pre-line"><%= __(proposal.summary) %></p></div>
+  <% } %>
+
+  <form action="/projects/<%= project._id %>/proposals/<%= proposal._id %>/accept" method="post" id="acceptForm">
+    <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+
+    <% if (proposal.kind === 'analysis') { %>
+      <div class="panel panel-body mb-3">
+        <h2 class="h6 mb-3"><%= __('Sections to apply (each selected section replaces what is saved now)') %></h2>
+        <% Object.keys(sectionLabels).forEach(function (key) { const val = p.analysis[key]; if (!val || (Array.isArray(val) && !val.length)) return; %>
+          <label class="proposal-item">
+            <input class="form-check-input" type="checkbox" name="items" value="section:<%= key %>" checked <%= dis %>>
+            <div><div class="fw-semibold"><%= __(sectionLabels[key]) %></div>
+              <% if (Array.isArray(val)) { %><ul class="small mb-0"><% val.forEach(function (i) { %><li><%= i %></li><% }) %></ul><% } else { %><div class="small"><%= val %></div><% } %>
+              <% const cur = project.analysis && project.analysis[key]; if (cur && cur.length) { %><div class="small text-muted mt-1"><%= __('Currently:') %> <%= Array.isArray(cur) ? __('{n} item(s)', { n: cur.length }) : __('set') %></div><% } %>
+            </div>
+          </label>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <% if (proposal.kind === 'graph') { %>
+      <div class="panel panel-body mb-3">
+        <h2 class="h6 mb-3"><%= __('New nodes ({n})', { n: p.nodes.length }) %></h2>
+        <% p.nodes.forEach(function (n, i) { %>
+          <label class="proposal-item">
+            <input class="form-check-input" type="checkbox" name="items" value="node:<%= i %>" checked <%= dis %>>
+            <div><span class="type-badge" data-type-badge="<%= n.type %>"><%= fmt.label(n.type) %></span> <span class="fw-semibold"><%= n.title %></span><% if (n.description) { %><div class="small text-muted"><%= n.description %></div><% } %></div>
+          </label>
+        <% }) %>
+        <% if (!p.nodes.length) { %><p class="small text-muted"><%= __('No new nodes.') %></p><% } %>
+        <h2 class="h6 my-3"><%= __('New connections ({n})', { n: p.edges.length }) %></h2>
+        <% const titleOf = function (end) { if (end.kind === 'new') { const n = p.nodes.find(function (x) { return x.key === end.ref; }); return n ? n.title : '?'; } return __('existing node'); }; %>
+        <% p.edges.forEach(function (e, i) { %>
+          <label class="proposal-item">
+            <input class="form-check-input" type="checkbox" name="items" value="edge:<%= i %>" checked <%= dis %>>
+            <div class="small"><strong><%= titleOf(e.source) %></strong> <span class="conn-rel bg-light text-dark"><%= __(e.relationship.replace(/_/g, ' ')) %></span> <strong><%= titleOf(e.target) %></strong><% if (e.description) { %><div class="text-muted"><%= e.description %></div><% } %></div>
+          </label>
+        <% }) %>
+        <p class="small text-muted mb-0"><%= __('Connections are only created when both ends exist, so unchecking a node also skips its connections.') %><%= p.droppedEdges ? ' ' + __('{n} suggested connection(s) referenced unknown nodes and were discarded.', { n: p.droppedEdges }) : '' %></p>
+      </div>
+    <% } %>
+
+    <% if (proposal.kind === 'roadmap') { %>
+      <div class="panel panel-body mb-3">
+        <h2 class="h6"><%= __('How to apply') %></h2>
+        <div class="form-check"><input class="form-check-input" type="radio" name="mode" id="modeAppend" value="append" checked <%= dis %>><label class="form-check-label" for="modeAppend"><%= __('Add these phases to my current plan') %></label></div>
+        <div class="form-check"><input class="form-check-input" type="radio" name="mode" id="modeReplace" value="replace" <%= dis %>><label class="form-check-label" for="modeReplace"><%= __('Replace my current phases and tasks (the current plan stays restorable in History)') %></label></div>
+      </div>
+      <p class="mb-2"><strong><%= p.title %></strong>: <%= p.objective %></p>
+      <% p.phases.forEach(function (ph, i) { %>
+        <label class="proposal-item d-block">
+          <div class="d-flex gap-2 align-items-start">
+            <input class="form-check-input" type="checkbox" name="items" value="phase:<%= i %>" checked <%= dis %>>
+            <div class="flex-grow-1">
+              <div class="fw-semibold"><%= __('Phase {n}', { n: i + 1 }) %>: <%= ph.title %></div>
+              <% if (ph.description) { %><div class="small text-muted"><%= ph.description %></div><% } %>
+              <% if (ph.milestones.length) { %><div class="small mt-1"><strong><%= __('Milestones:') %></strong> <%= ph.milestones.map(function (m) { return m.title; }).join(', ') %></div><% } %>
+              <ul class="small mt-1 mb-0"><% ph.tasks.forEach(function (t) { %><li><span class="prio prio-<%= t.priority %>"><%= fmt.label(t.priority) %></span> <%= t.title %><% if (t.dependsOn.length) { %> <span class="text-muted">(<%= __('after') %> <%= t.dependsOn.map(function (k) { let title = k; p.phases.forEach(function (pp) { pp.tasks.forEach(function (tt) { if (tt.key === k) title = tt.title; }); }); return title; }).join(', ') %>)</span><% } %></li><% }) %></ul>
+            </div>
+          </div>
+        </label>
+      <% }) %>
+      <% if (p.droppedDeps) { %><p class="small text-muted"><%= __('{n} dependency link(s) were invalid or circular and were removed.', { n: p.droppedDeps }) %></p><% } %>
+    <% } %>
+
+    <% if (proposal.kind === 'tasks') { %>
+      <div class="panel panel-body mb-3">
+        <h2 class="h6 mb-3"><%= __('Improvements to existing tasks ({n})', { n: p.improvements.length }) %></h2>
+        <% p.improvements.forEach(function (imp, i) { %>
+          <label class="proposal-item">
+            <input class="form-check-input" type="checkbox" name="items" value="improve:<%= i %>" checked <%= dis %>>
+            <div class="small">
+              <div class="fw-semibold"><%= imp.currentTitle %></div>
+              <% Object.keys(imp.changes).forEach(function (k) { %><div><span class="text-muted"><%= fmt.label(k) %>:</span> <span class="diff-new"><%= imp.changes[k] %></span></div><% }) %>
+              <div class="text-muted fst-italic"><%= imp.reason %></div>
+            </div>
+          </label>
+        <% }) %>
+        <% if (!p.improvements.length) { %><p class="small text-muted"><%= __('No changes suggested to existing tasks.') %></p><% } %>
+        <h2 class="h6 my-3"><%= __('Missing tasks ({n})', { n: p.missingTasks.length }) %></h2>
+        <% p.missingTasks.forEach(function (t, i) { %>
+          <label class="proposal-item">
+            <input class="form-check-input" type="checkbox" name="items" value="add:<%= i %>" checked <%= dis %>>
+            <div class="small"><span class="prio prio-<%= t.priority %>"><%= fmt.label(t.priority) %></span> <span class="fw-semibold"><%= t.title %></span><% if (t.description) { %><div><%= t.description %></div><% } %><div class="text-muted fst-italic"><%= t.reason %></div></div>
+          </label>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <% if (proposal.kind === 'replan') { %>
+      <div class="row g-3 mb-3">
+        <div class="col-lg-6">
+          <div class="panel panel-body h-100">
+            <h2 class="h6"><%= __('Affected map elements ({n})', { n: p.affectedNodes.length }) %></h2>
+            <% if (!p.affectedNodes.length) { %><p class="small text-muted mb-0"><%= __('No other nodes are connected in a way that carries this change.') %></p><% } %>
+            <ul class="small mb-0"><% p.affectedNodes.forEach(function (n) { %><li><span class="fw-semibold"><%= n.title %></span> <span class="text-muted">(<%= fmt.label(n.type) %>, <%= __(n.depth > 1 ? '{n} steps away via “{rel}”' : '{n} step away via “{rel}”', { n: n.depth, rel: __(String(n.via).replace(/_/g, ' ')) }) %>)</span><% if (n.path.length > 2) { %><div class="text-muted"><%= __('Path:') %> <%= n.path.join(dir === 'rtl' ? ' ← ' : ' → ') %></div><% } %></li><% }) %></ul>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="panel panel-body h-100">
+            <h2 class="h6"><%= __('Affected tasks ({tasks}) and milestones ({milestones})', { tasks: p.affectedTasks.length, milestones: p.affectedMilestones.length }) %></h2>
+            <ul class="small mb-2"><% p.affectedTasks.forEach(function (t) { %><li><%= t.title %> <span class="status-badge status-<%= t.status %>"><%= fmt.label(t.status) %></span> <span class="text-muted"><%= __(t.reason) %></span></li><% }) %></ul>
+            <% if (p.affectedMilestones.length) { %><div class="small"><strong><%= __('Milestones at risk:') %></strong> <%= p.affectedMilestones.map(function (m) { return m.title + ' (' + m.phase + ')'; }).join(', ') %></div><% } %>
+            <% if (p.milestoneNodes && p.milestoneNodes.length) { %><div class="small"><strong><%= __('Milestone nodes on the map:') %></strong> <%= p.milestoneNodes.join(', ') %></div><% } %>
+          </div>
+        </div>
+      </div>
+      <div class="panel panel-body mb-3">
+        <h2 class="h6 mb-3"><%= __('Proposed changes') %></h2>
+        <% if (p.nodeUpdate) { %>
+          <label class="proposal-item"><input class="form-check-input" type="checkbox" name="items" value="node:0" checked <%= dis %>><div class="small"><%- __('Mark <strong>{title}</strong> as <span class="diff-new">invalidated</span> on the map', { title: escapeHtml(p.nodeTitle) }) %></div></label>
+        <% } %>
+        <% p.taskChanges.forEach(function (c, i) { %>
+          <label class="proposal-item">
+            <input class="form-check-input" type="checkbox" name="items" value="task:<%= i %>" <%= c.defaultSelected ? 'checked' : '' %> <%= dis %>>
+            <div class="small">
+              <div class="fw-semibold"><%= c.title %></div>
+              <% if (c.newStatus) { %><div><%= __('Status:') %> <span class="diff-old"><%= fmt.label(c.currentStatus) %></span> <%= dir === 'rtl' ? '←' : '→' %> <span class="diff-new"><%= fmt.label(c.newStatus) %></span> <span class="text-muted">(“<%= __(c.note) %>”)</span></div><% } %>
+              <% if (c.newPriority) { %><div><%= __('Priority:') %> <span class="diff-old"><%= fmt.label(c.currentPriority) %></span> <%= dir === 'rtl' ? '←' : '→' %> <span class="diff-new"><%= fmt.label(c.newPriority) %></span><%= __(', so it gets reviewed') %></div><% } %>
+              <div class="text-muted"><%= __(c.reason) %><%= c.direct ? '' : ' (' + __('indirect') + ')' %></div>
+            </div>
+          </label>
+        <% }) %>
+        <h3 class="h6 mt-3 mb-2"><%= __('Alternative actions (new tasks)') %></h3>
+        <% p.newTasks.forEach(function (t, i) { %>
+          <label class="proposal-item">
+            <input class="form-check-input" type="checkbox" name="items" value="new:<%= i %>" <%= t.defaultSelected ? 'checked' : '' %> <%= dis %>>
+            <div class="small"><span class="prio prio-<%= t.priority %>"><%= fmt.label(t.priority) %></span> <span class="fw-semibold"><%= __(t.title) %></span> <span class="source-tag"><%= __(t.origin === 'ai' ? 'AI' : 'Rule') %></span><% if (t.description) { %><div><%= __(t.description) %></div><% } %><div class="text-muted fst-italic"><%= __(t.reason) %></div></div>
+          </label>
+        <% }) %>
+        <% if (p.ai && !p.ai.ok) { %><div class="alert alert-warning small mt-2 mb-0"><%= __('The AI request for extra alternatives failed, so only rule-based suggestions are shown:') %> <%= __(p.ai.message) %></div><% } %>
+        <% if (p.ai && p.ai.ok && p.ai.explanation) { %><div class="small text-muted mt-2"><strong><%= __('AI note:') %></strong> <%= p.ai.explanation %></div><% } %>
+      </div>
+    <% } %>
+  </form>
+
+  <% if (pending) { %>
+    <div class="d-flex flex-wrap gap-2 justify-content-end">
+      <form action="/projects/<%= project._id %>/proposals/<%= proposal._id %>/reject" method="post"><input type="hidden" name="_csrf" value="<%= csrfToken() %>"><button class="btn btn-light" type="submit"><%= __('Reject, change nothing') %></button></form>
+      <button class="btn btn-primary" type="submit" form="acceptForm"><i data-lucide="check" class="icon-sm"></i> <%= __('Apply selected changes') %></button>
+    </div>
+  <% } %>
+</div>

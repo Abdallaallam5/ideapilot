@@ -1,0 +1,101 @@
+<% const v = values || {}; const deps = (v.dependencies || []).map(String); const selPhase = v.phaseId ? String(v.phaseId) : ''; %>
+<div class="ws-page">
+  <div class="container-fluid" style="max-width: 860px">
+    <a class="back-link" href="/projects/<%= project._id %>/tasks"><i data-lucide="arrow-left" class="icon-sm"></i> <%= __('Tasks') %></a>
+    <h1 class="h3 mt-2 mb-3"><%= __(task ? 'Edit task' : 'New task') %></h1>
+    <%- include('../partials/formErrors', { errors }) %>
+    <form class="panel panel-body" action="/projects/<%= project._id %>/tasks<%= task ? '/' + task._id + '/update' : '' %>" method="post" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+      <div class="mb-3">
+        <label class="form-label" for="title"><%= __('Title') %> <span class="text-danger" aria-hidden="true">*</span></label>
+        <input class="form-control <%= errors.title ? 'is-invalid' : '' %>" id="title" name="title" value="<%= v.title || '' %>" maxlength="200" required>
+        <%- include('../partials/fieldError', { field: 'title' }) %>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="description"><%= __('Description') %></label>
+        <textarea class="form-control" id="description" name="description" rows="3" maxlength="4000"><%= v.description || '' %></textarea>
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label class="form-label" for="status"><%= __('Status') %></label>
+          <select class="form-select" id="status" name="status" data-status-select>
+            <% C.TASK_STATUSES.forEach(function (s) { %><option value="<%= s %>" <%= (v.status || 'todo') === s ? 'selected' : '' %>><%= fmt.label(s) %></option><% }) %>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="priority"><%= __('Priority') %></label>
+          <select class="form-select" id="priority" name="priority">
+            <% C.PRIORITIES.forEach(function (p) { %><option value="<%= p %>" <%= (v.priority || 'medium') === p ? 'selected' : '' %>><%= fmt.label(p) %></option><% }) %>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="deadline"><%= __('Deadline') %> <span class="optional"><%= __('optional') %></span></label>
+          <input class="form-control <%= errors.deadline ? 'is-invalid' : '' %>" type="date" id="deadline" name="deadline" value="<%= v.deadline && v.deadline instanceof Date ? fmt.isoDate(v.deadline) : (v.deadline || '') %>">
+          <%- include('../partials/fieldError', { field: 'deadline' }) %>
+        </div>
+      </div>
+      <div class="mb-3" data-blocked-reason <%= (v.status || 'todo') === 'blocked' ? '' : 'hidden' %>>
+        <label class="form-label" for="blockedReason"><%= __('Why is it blocked?') %> <span class="optional"><%= __('optional') %></span></label>
+        <input class="form-control" id="blockedReason" name="blockedReason" value="<%= v.blockedReason || '' %>" maxlength="500">
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label" for="phaseId"><%= __('Phase') %></label>
+          <select class="form-select <%= errors.phaseId ? 'is-invalid' : '' %>" id="phaseId" name="phaseId" data-phase-select>
+            <option value=""><%= __('Unphased') %></option>
+            <% phases.forEach(function (p) { %><option value="<%= p._id %>" <%= selPhase === String(p._id) ? 'selected' : '' %>><%= p.title %></option><% }) %>
+          </select>
+          <%- include('../partials/fieldError', { field: 'phaseId' }) %>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="milestoneId"><%= __('Milestone') %> <span class="optional"><%= __('optional') %></span></label>
+          <select class="form-select <%= errors.milestoneId ? 'is-invalid' : '' %>" id="milestoneId" name="milestoneId" data-milestone-select>
+            <option value=""><%= __('None') %></option>
+            <% phases.forEach(function (p) { p.milestones.forEach(function (m) { %><option value="<%= m._id %>" data-phase="<%= p._id %>" <%= String(v.milestoneId || '') === String(m._id) ? 'selected' : '' %>><%= m.title %> (<%= p.title %>)</option><% }) }) %>
+          </select>
+          <%- include('../partials/fieldError', { field: 'milestoneId' }) %>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="linkedNode"><%= __('Linked map node') %> <span class="optional"><%= __('optional, used when replanning') %></span></label>
+        <select class="form-select <%= errors.linkedNode ? 'is-invalid' : '' %>" id="linkedNode" name="linkedNode">
+          <option value=""><%= __('None') %></option>
+          <% nodes.forEach(function (n) { %><option value="<%= n._id %>" <%= String(v.linkedNode || '') === String(n._id) ? 'selected' : '' %>><%= n.title %> (<%= fmt.label(n.type) %>)</option><% }) %>
+        </select>
+        <%- include('../partials/fieldError', { field: 'linkedNode' }) %>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="dependencies"><%= __('Depends on') %> <span class="optional"><%= __('hold Ctrl/Cmd to select several') %></span></label>
+        <select class="form-select <%= errors.dependencies ? 'is-invalid' : '' %>" id="dependencies" name="dependencies" multiple size="<%= Math.min(8, Math.max(3, allTasks.length)) %>">
+          <% allTasks.forEach(function (t) { %><option value="<%= t.id %>" <%= deps.includes(t.id) ? 'selected' : '' %>><%= t.title %> · <%= fmt.label(t.status) %></option><% }) %>
+        </select>
+        <div class="form-text"><%= __('Circular chains (A waits on B, B waits on A) are rejected.') %></div>
+        <%- include('../partials/fieldError', { field: 'dependencies' }) %>
+      </div>
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label class="form-label" for="deliverables"><%= __('Expected deliverables') %> <span class="optional"><%= __('one per line') %></span></label>
+          <textarea class="form-control" id="deliverables" name="deliverables" rows="3"><%= Array.isArray(v.deliverables) ? v.deliverables.join('\n') : (v.deliverables || '') %></textarea>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="completionCriteria"><%= __('Completion criteria') %></label>
+          <textarea class="form-control" id="completionCriteria" name="completionCriteria" rows="3" maxlength="2000" placeholder="<%= __('How will you know it is done?') %>"><%= v.completionCriteria || '' %></textarea>
+        </div>
+      </div>
+      <div class="d-flex justify-content-between flex-wrap gap-2">
+        <% if (task) { %>
+          <button class="btn btn-outline-danger" type="button" data-confirm="<%= __('Delete task “{title}”?', { title: task.title }) %>" data-confirm-form="#deleteTaskForm"><i data-lucide="trash-2" class="icon-sm"></i> <%= __('Delete') %></button>
+        <% } else { %><span></span><% } %>
+        <div class="d-flex gap-2">
+          <a class="btn btn-light" href="/projects/<%= project._id %>/tasks"><%= __('Cancel') %></a>
+          <button class="btn btn-primary" type="submit"><%= __(task ? 'Save task' : 'Create task') %></button>
+        </div>
+      </div>
+    </form>
+    <% if (task) { %>
+      <form id="deleteTaskForm" class="d-none" action="/projects/<%= project._id %>/tasks/<%= task._id %>/delete" method="post"><input type="hidden" name="_csrf" value="<%= csrfToken() %>"></form>
+      <p class="small text-muted mt-3"><%= __('Created') %> <%= fmt.formatDateTime(task.createdAt) %><%= task.completedAt ? ' · ' + __('Completed') + ' ' + fmt.formatDateTime(task.completedAt) : '' %></p>
+    <% } %>
+  </div>
+</div>
+<% pageScripts.push('/static/js/tasks.js') %>

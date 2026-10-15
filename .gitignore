@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Local temporary files
+tmp/
+.tmp/
+coverage/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

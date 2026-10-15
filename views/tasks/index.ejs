@@ -1,0 +1,146 @@
+<% pageScripts.push('/static/js/tasks.js') %>
+<% const qs = function (extra) { const p = Object.assign({}, filters, { view: view }, extra); return '?' + Object.keys(p).filter(function (k) { return p[k]; }).map(function (k) { return encodeURIComponent(k) + '=' + encodeURIComponent(p[k]); }).join('&'); }; %>
+<div class="ws-page" data-tasks-page data-project-id="<%= project._id %>" data-view="<%= view %>">
+  <div class="ws-page-head">
+    <div>
+      <h1><%= __('Tasks') %></h1>
+      <p><span data-progress-text><%= __('{done} of {total} completed', { done: progress.completed, total: progress.total }) %> · <%= progress.percent %>%</span></p>
+    </div>
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+      <div class="btn-group" role="group" aria-label="<%= __('View') %>">
+        <a class="btn btn-sm <%= view === 'list' ? 'btn-primary' : 'btn-light' %>" href="<%= qs({ view: 'list' }) %>" <%= view === 'list' ? 'aria-current=page' : '' %>><i data-lucide="list" class="icon-sm"></i> <%= __('List') %></a>
+        <a class="btn btn-sm <%= view === 'kanban' ? 'btn-primary' : 'btn-light' %>" href="<%= qs({ view: 'kanban' }) %>" <%= view === 'kanban' ? 'aria-current=page' : '' %>><i data-lucide="kanban" class="icon-sm"></i> <%= __('Kanban') %></a>
+      </div>
+      <% if (aiStatus.enabled && allTasks.length) { %>
+        <form action="/projects/<%= project._id %>/ai/tasks" method="post" data-ai-inline>
+          <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+          <button class="btn btn-copilot btn-sm" type="submit"><i data-lucide="sparkles" class="icon-sm"></i> <%= __('Improve with AI') %></button>
+        </form>
+      <% } %>
+      <a class="btn btn-primary btn-sm" href="/projects/<%= project._id %>/tasks/new"><i data-lucide="plus" class="icon-sm"></i> <%= __('New task') %></a>
+    </div>
+  </div>
+
+  <div class="progress mb-3" style="height: 6px" role="progressbar" aria-label="<%= __('Task progress') %>" aria-valuenow="<%= progress.percent %>" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" data-progress-bar style="width: <%= progress.percent %>%"></div></div>
+
+  <form class="filter-bar" method="get" role="search">
+    <input type="hidden" name="view" value="<%= view %>">
+    <div class="input-icon flex-grow-1">
+      <i data-lucide="search" class="icon-sm"></i>
+      <label class="visually-hidden" for="taskSearch"><%= __('Search tasks') %></label>
+      <input class="form-control" id="taskSearch" name="q" value="<%= filters.q || '' %>" placeholder="<%= __('Search tasks') %>" maxlength="100">
+    </div>
+    <% if (view === 'list') { %>
+    <label class="visually-hidden" for="fStatus"><%= __('Status') %></label>
+    <select class="form-select" id="fStatus" name="status" data-autosubmit>
+      <option value=""><%= __('All statuses') %></option>
+      <% C.TASK_STATUSES.forEach(function (s) { %><option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= fmt.label(s) %></option><% }) %>
+      <option value="overdue" <%= filters.status === 'overdue' ? 'selected' : '' %>><%= __('Overdue') %></option>
+    </select>
+    <% } %>
+    <label class="visually-hidden" for="fPriority"><%= __('Priority') %></label>
+    <select class="form-select" id="fPriority" name="priority" data-autosubmit>
+      <option value=""><%= __('All priorities') %></option>
+      <% C.PRIORITIES.forEach(function (p) { %><option value="<%= p %>" <%= filters.priority === p ? 'selected' : '' %>><%= fmt.label(p) %></option><% }) %>
+    </select>
+    <label class="visually-hidden" for="fPhase"><%= __('Phase') %></label>
+    <select class="form-select" id="fPhase" name="phaseId" data-autosubmit>
+      <option value=""><%= __('All phases') %></option>
+      <% phases.forEach(function (p) { %><option value="<%= p._id %>" <%= filters.phaseId === String(p._id) ? 'selected' : '' %>><%= p.title %></option><% }) %>
+      <option value="none" <%= filters.phaseId === 'none' ? 'selected' : '' %>><%= __('Unphased') %></option>
+    </select>
+    <% if (view === 'list') { %>
+    <label class="visually-hidden" for="fSort"><%= __('Sort') %></label>
+    <select class="form-select" id="fSort" name="sort" data-autosubmit>
+      <option value="order" <%= !filters.sort || filters.sort === 'order' ? 'selected' : '' %>><%= __('Plan order') %></option>
+      <option value="deadline" <%= filters.sort === 'deadline' ? 'selected' : '' %>><%= __('Deadline') %></option>
+      <option value="priority" <%= filters.sort === 'priority' ? 'selected' : '' %>><%= __('Priority') %></option>
+      <option value="status" <%= filters.sort === 'status' ? 'selected' : '' %>><%= __('Status') %></option>
+    </select>
+    <% } %>
+    <button class="btn btn-outline-primary" type="submit"><%= __('Apply') %></button>
+    <% if (hasFilters) { %><a class="btn btn-link" href="?view=<%= view %>"><%= __('Clear') %></a><% } %>
+  </form>
+
+  <% if (!allTasks.length) { %>
+    <div class="empty-state">
+      <div class="empty-illustration" aria-hidden="true"><i data-lucide="list-checks"></i></div>
+      <h2 class="h5"><%= __('No tasks yet') %></h2>
+      <p class="text-muted mx-auto"><%= __('Create tasks here, add them to phases on the Roadmap, or link them to nodes on your map.') %></p>
+      <a class="btn btn-primary" href="/projects/<%= project._id %>/tasks/new"><i data-lucide="plus" class="icon-sm"></i> <%= __('Create a task') %></a>
+    </div>
+  <% } else if (view === 'kanban') { %>
+    <div class="kanban" data-kanban>
+      <% columns.forEach(function (col) { %>
+        <section class="kanban-col" data-status="<%= col.status %>" aria-labelledby="col-<%= col.status %>">
+          <div class="kanban-col-head"><span id="col-<%= col.status %>"><%= fmt.label(col.status) %></span><span class="count" data-col-count><%= col.tasks.length %></span></div>
+          <div class="kanban-list" data-kanban-list data-status="<%= col.status %>">
+            <% col.tasks.forEach(function (t) { %>
+              <article class="k-card <%= t.isOverdue ? 'is-overdue' : '' %> <%= t.isBlocked && t.status !== 'completed' ? 'is-blocked' : '' %>" draggable="true" tabindex="0" data-task-id="<%= t.id %>" aria-label="<%= t.title %>">
+                <a class="k-card-title <%= t.status === 'completed' ? 'task-title-done' : '' %>" href="/projects/<%= project._id %>/tasks/<%= t.id %>/edit"><%= t.title %></a>
+                <div class="k-card-meta">
+                  <%- include('_badges', { t }) %>
+                  <% if (t.phaseId && phaseTitle.get(String(t.phaseId))) { %><span class="small text-muted"><i data-lucide="milestone" class="icon-xs"></i> <%= phaseTitle.get(String(t.phaseId)) %></span><% } %>
+                </div>
+                <div class="k-move gap-1 mt-2" role="group" aria-label="<%= __('Move task') %>">
+                  <% C.TASK_STATUSES.filter(function (s) { return s !== col.status; }).forEach(function (s) { %>
+                    <button class="btn btn-light btn-sm py-0 px-2" type="button" data-move-status="<%= s %>"><%= dir === 'rtl' ? '←' : '→' %> <%= fmt.label(s) %></button>
+                  <% }) %>
+                </div>
+              </article>
+            <% }) %>
+          </div>
+        </section>
+      <% }) %>
+    </div>
+    <p class="small text-muted mt-2"><i data-lucide="info" class="icon-xs"></i> <%= __('Drag cards between columns, or focus a card with Tab to see move buttons. A task cannot move to Completed while it is waiting on unfinished dependencies.') %></p>
+  <% } else { %>
+    <div class="panel">
+      <% if (!tasks.length) { %>
+        <div class="panel-body text-center text-muted"><%= __('No tasks match these filters.') %></div>
+      <% } else { %>
+      <div class="table-responsive">
+        <table class="table task-table align-middle">
+          <thead><tr><th scope="col"><%= __('Task') %></th><th scope="col"><%= __('Status') %></th><th scope="col"><%= __('Priority') %></th><th scope="col"><%= __('Deadline') %></th><th scope="col"><%= __('Phase') %></th><th scope="col"><span class="visually-hidden"><%= __('Actions') %></span></th></tr></thead>
+          <tbody>
+            <% tasks.forEach(function (t) { %>
+              <tr data-task-id="<%= t.id %>" class="<%= t.isOverdue ? 'is-overdue' : '' %> <%= t.isBlocked && t.status !== 'completed' ? 'is-blocked' : '' %>">
+                <td style="min-width: 240px">
+                  <a class="fw-semibold text-decoration-none <%= t.status === 'completed' ? 'task-title-done' : 'text-reset' %>" href="/projects/<%= project._id %>/tasks/<%= t.id %>/edit"><%= t.title %></a>
+                  <div class="d-flex flex-wrap gap-2 mt-1" data-task-flags>
+                    <% if (t.isOverdue) { %><span class="flag flag-overdue"><i data-lucide="alarm-clock" class="icon-xs"></i><%= __('Overdue') %></span><% } %>
+                    <% if (t.status !== 'completed' && t.waitingOn.length) { %><span class="flag flag-waiting" title="<%= t.waitingOn.map(function (w) { return w.title; }).join(', ') %>"><i data-lucide="hourglass" class="icon-xs"></i><%= __('Waiting on') %> <%= t.waitingOn.length %></span><% } %>
+                    <% t.dependencyTasks.forEach(function (d) { %><a class="dep-chip <%= d.status !== 'completed' ? 'open' : '' %>" href="/projects/<%= project._id %>/tasks/<%= d.id %>/edit" title="<%= __('Depends on') %>"><i data-lucide="corner-down-right" class="icon-xs"></i><%= d.title %></a><% }) %>
+                  </div>
+                </td>
+                <td>
+                  <label class="visually-hidden" for="st-<%= t.id %>"><%= __('Status for') %> <%= t.title %></label>
+                  <select class="form-select form-select-sm" id="st-<%= t.id %>" data-task-field="status">
+                    <% C.TASK_STATUSES.forEach(function (s) { %><option value="<%= s %>" <%= t.status === s ? 'selected' : '' %>><%= fmt.label(s) %></option><% }) %>
+                  </select>
+                </td>
+                <td>
+                  <label class="visually-hidden" for="pr-<%= t.id %>"><%= __('Priority for') %> <%= t.title %></label>
+                  <select class="form-select form-select-sm" id="pr-<%= t.id %>" data-task-field="priority">
+                    <% C.PRIORITIES.forEach(function (p) { %><option value="<%= p %>" <%= t.priority === p ? 'selected' : '' %>><%= fmt.label(p) %></option><% }) %>
+                  </select>
+                </td>
+                <td>
+                  <label class="visually-hidden" for="dl-<%= t.id %>"><%= __('Deadline for') %> <%= t.title %></label>
+                  <input class="form-control form-control-sm" type="date" id="dl-<%= t.id %>" value="<%= fmt.isoDate(t.deadline) %>" data-task-field="deadline">
+                </td>
+                <td class="small text-muted"><%= t.phaseId && phaseTitle.get(String(t.phaseId)) ? phaseTitle.get(String(t.phaseId)) : __('Unphased') %></td>
+                <td class="text-end text-nowrap">
+                  <a class="btn btn-icon" href="/projects/<%= project._id %>/tasks/<%= t.id %>/edit" aria-label="<%= __('Edit') %> <%= t.title %>"><i data-lucide="pencil" class="icon-sm"></i></a>
+                  <form id="del-task-<%= t.id %>" class="d-none" action="/projects/<%= project._id %>/tasks/<%= t.id %>/delete" method="post"><input type="hidden" name="_csrf" value="<%= csrfToken() %>"><input type="hidden" name="returnTo" value="list"></form>
+                  <button class="btn btn-icon" type="button" aria-label="<%= __('Delete') %> <%= t.title %>" data-confirm="<%= __('Delete task “{title}”? Tasks that depend on it will no longer wait for it.', { title: t.title }) %>" data-confirm-form="#del-task-<%= t.id %>"><i data-lucide="trash-2" class="icon-sm"></i></button>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+      <% } %>
+    </div>
+  <% } %>
+</div>

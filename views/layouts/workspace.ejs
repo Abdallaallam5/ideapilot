@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+<head>
+<%- include('../partials/head') %>
+<link rel="stylesheet" href="/static/css/workspace.css">
+</head>
+<body class="<%= bodyClass %>" data-project-id="<%= project._id %>">
+  <a class="skip-link" href="#main"><%= __("Skip to content") %></a>
+  <div class="ws-shell">
+    <%- include('../partials/workspaceHeader') %>
+    <div class="ws-body">
+      <%- include('../partials/sidebar') %>
+      <main id="main" class="ws-main" tabindex="-1">
+        <%- include('../partials/flash', { flashClass: 'ws-flash' }) %>
+        <%- body %>
+      </main>
+    </div>
+  </div>
+  <%- include('../partials/aiPanel') %>
+  <%- include('../partials/confirmModal') %>
+  <div class="toast-container position-fixed bottom-0 end-0 p-3" data-toast-container></div>
+  <% pageScripts.unshift('/static/js/workspace.js') %>
+  <%- include('../partials/scripts') %>
+</body>
+</html>

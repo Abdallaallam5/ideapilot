@@ -1,0 +1,99 @@
+<section class="dashboard container py-4 py-lg-5">
+  <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div>
+      <p class="eyebrow mb-1"><%= __(new Date().getUTCHours() < 12 ? 'Good morning' : new Date().getUTCHours() < 18 ? 'Good afternoon' : 'Good evening') %></p>
+      <h1 class="h2 mb-0"><%= __('Hi, {name}', { name: currentUser.name }) %></h1>
+    </div>
+    <a class="btn btn-primary" href="/projects/new"><i data-lucide="plus" class="icon-sm"></i> <%= __('Create idea') %></a>
+  </div>
+
+  <% if (totals.projects) { %>
+  <div class="row g-3 mb-4">
+    <% [
+      { label: 'Ideas', value: totals.projects, icon: 'lightbulb' },
+      { label: 'Active tasks', value: totals.activeTasks, icon: 'list-todo' },
+      { label: 'Completed tasks', value: totals.completed, icon: 'check-circle-2' },
+      { label: 'Overdue tasks', value: totals.overdue, icon: 'alarm-clock', tone: totals.overdue ? 'danger' : '' },
+    ].forEach(function (s) { %>
+      <div class="col-6 col-lg-3">
+        <div class="stat-card <%= s.tone %>"><i data-lucide="<%= s.icon %>"></i><div><div class="stat-value"><%= s.value %></div><div class="stat-label"><%= __(s.label) %></div></div></div>
+      </div>
+    <% }) %>
+  </div>
+
+  <form class="filter-bar" method="get" action="/dashboard" role="search">
+    <div class="input-icon flex-grow-1">
+      <i data-lucide="search" class="icon-sm"></i>
+      <label class="visually-hidden" for="q"><%= __('Search ideas') %></label>
+      <input class="form-control" id="q" name="q" value="<%= filters.q || '' %>" placeholder="<%= __('Search by title or description') %>" maxlength="100">
+    </div>
+    <label class="visually-hidden" for="stageFilter"><%= __('Stage') %></label>
+    <select class="form-select" id="stageFilter" name="stage" data-autosubmit>
+      <option value=""><%= __('All stages') %></option>
+      <% C.PROJECT_STAGES.forEach(function (s) { %><option value="<%= s %>" <%= filters.stage === s ? 'selected' : '' %>><%= fmt.label(s) %></option><% }) %>
+    </select>
+    <label class="visually-hidden" for="statusFilter"><%= __('Status') %></label>
+    <select class="form-select" id="statusFilter" name="status" data-autosubmit>
+      <option value=""><%= __('All statuses') %></option>
+      <% C.PROJECT_STATUSES.forEach(function (s) { %><option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= fmt.label(s) %></option><% }) %>
+    </select>
+    <label class="visually-hidden" for="sort"><%= __('Sort') %></label>
+    <select class="form-select" id="sort" name="sort" data-autosubmit>
+      <option value="updated" <%= !filters.sort || filters.sort === 'updated' ? 'selected' : '' %>><%= __('Recently updated') %></option>
+      <option value="created" <%= filters.sort === 'created' ? 'selected' : '' %>><%= __('Newest first') %></option>
+      <option value="title" <%= filters.sort === 'title' ? 'selected' : '' %>><%= __('Title A–Z') %></option>
+    </select>
+    <button class="btn btn-outline-primary" type="submit"><%= __('Search') %></button>
+    <% if (hasFilters) { %><a class="btn btn-link" href="/dashboard"><%= __('Clear') %></a><% } %>
+  </form>
+  <% } %>
+
+  <% if (!totals.projects) { %>
+    <div class="empty-state">
+      <div class="empty-illustration" aria-hidden="true"><i data-lucide="sparkles"></i></div>
+      <h2 class="h4"><%= __('Your first idea starts here') %></h2>
+      <p class="text-muted mx-auto"><%= __('Write down an idea: a business, an app, a trip, a skill you want to learn. IdeaPilot helps you map it, plan it and see it through.') %></p>
+      <a class="btn btn-primary btn-lg" href="/projects/new"><i data-lucide="plus" class="icon-sm"></i> <%= __('Create your first idea') %></a>
+    </div>
+  <% } else if (!projects.length) { %>
+    <div class="empty-state small-empty">
+      <h2 class="h5"><%= __('No ideas match these filters') %></h2>
+      <p class="text-muted"><%= __('Try a different search or') %> <a href="/dashboard"><%= __('clear the filters') %></a></p>
+    </div>
+  <% } else { %>
+    <div class="row g-3 project-grid">
+      <% projects.forEach(function (p) { %>
+        <div class="col-md-6 col-xl-4">
+          <article class="project-card">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+              <span class="stage-pill stage-<%= p.stage %>"><%= fmt.label(p.stage) %></span>
+              <div class="dropdown">
+                <button class="btn btn-icon" data-bs-toggle="dropdown" aria-expanded="false" aria-label="<%= __('Actions for {title}', { title: p.title }) %>"><i data-lucide="more-horizontal" class="icon-sm"></i></button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><a class="dropdown-item" href="/projects/<%= p._id %>/map"><i data-lucide="external-link" class="icon-sm me-2"></i><%= __('Open workspace') %></a></li>
+                  <li><a class="dropdown-item" href="/projects/<%= p._id %>/edit"><i data-lucide="pencil" class="icon-sm me-2"></i><%= __('Edit details') %></a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><button class="dropdown-item text-danger" type="button" data-confirm="<%= __('Delete “{title}” and all of its maps, plans, tasks and history? This cannot be undone.', { title: p.title }) %>" data-confirm-form="#delete-<%= p._id %>"><i data-lucide="trash-2" class="icon-sm me-2"></i><%= __('Delete') %></button></li>
+                </ul>
+                <form id="delete-<%= p._id %>" action="/projects/<%= p._id %>/delete" method="post" class="d-none"><input type="hidden" name="_csrf" value="<%= csrfToken() %>"></form>
+              </div>
+            </div>
+            <h2 class="h5 mt-3 mb-1"><a class="stretched-link-alt" href="/projects/<%= p._id %>/map"><%= p.title %></a></h2>
+            <p class="project-desc"><%= p.description.length > 160 ? p.description.slice(0, 160) + '…' : p.description %></p>
+            <div class="progress-row">
+              <div class="progress" role="progressbar" aria-label="<%= __('Progress') %>" aria-valuenow="<%= p.stats.progress %>" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: <%= p.stats.progress %>%"></div></div>
+              <span class="small fw-semibold"><%= p.stats.progress %>%</span>
+            </div>
+            <div class="project-meta">
+              <span title="<%= __('Active tasks') %>"><i data-lucide="list-todo" class="icon-xs"></i><%= __('{n} active', { n: p.stats.active }) %></span>
+              <% if (p.stats.blocked) { %><span class="text-warning-emphasis"><i data-lucide="octagon-pause" class="icon-xs"></i><%= __('{n} blocked', { n: p.stats.blocked }) %></span><% } %>
+              <% if (p.stats.overdue) { %><span class="text-danger"><i data-lucide="alarm-clock" class="icon-xs"></i><%= __('{n} overdue', { n: p.stats.overdue }) %></span><% } %>
+              <% if (p.status !== 'active') { %><span class="badge text-bg-light"><%= fmt.label(p.status) %></span><% } %>
+              <span class="ms-auto" title="<%= fmt.formatDateTime(p.updatedAt) %>"><%= __('Updated {when}', { when: fmt.timeAgo(p.updatedAt) }) %></span>
+            </div>
+          </article>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</section>

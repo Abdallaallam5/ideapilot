@@ -1,0 +1,32 @@
+<footer class="site-footer">
+  <div class="container">
+    <div class="row gy-4">
+      <div class="col-md-5">
+        <a class="d-inline-flex align-items-center gap-2 text-decoration-none" href="/"><%- include('logo') %></a>
+        <p class="text-muted small mt-3 mb-0"><%= __('Turn ideas from any part of life into visual maps, clear plans and tasks you can actually finish.') %></p>
+      </div>
+      <div class="col-6 col-md-3">
+        <h2 class="footer-heading"><%= __('Product') %></h2>
+        <ul class="list-unstyled small">
+          <li><a href="/#features"><%= __('Features') %></a></li>
+          <li><a href="/#how-it-works"><%= __('How it works') %></a></li>
+          <li><a href="/#faq"><%= __('FAQ') %></a></li>
+        </ul>
+      </div>
+      <div class="col-6 col-md-4">
+        <h2 class="footer-heading"><%= __('Account') %></h2>
+        <ul class="list-unstyled small">
+          <% if (currentUser) { %>
+            <li><a href="/dashboard"><%= __('Dashboard') %></a></li>
+            <li><a href="/projects/new"><%= __('Create an idea') %></a></li>
+            <li><a href="/settings"><%= __('Settings') %></a></li>
+          <% } else { %>
+            <li><a href="/register"><%= __('Create an account') %></a></li>
+            <li><a href="/login"><%= __('Log in') %></a></li>
+          <% } %>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom small text-muted">© <%= new Date().getFullYear() %> <%= __('IdeaPilot. Built with Node.js, Express, MongoDB and EJS.') %></div>
+  </div>
+</footer>

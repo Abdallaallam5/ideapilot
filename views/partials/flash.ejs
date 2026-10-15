@@ -1,0 +1,11 @@
+<% const flashMessages = consumeFlash(); if (flashMessages.length) { %>
+<div class="flash-stack <%= typeof flashClass !== 'undefined' ? flashClass : 'container' %>" role="status" aria-live="polite">
+  <% flashMessages.forEach(function (f) { %>
+    <div class="alert alert-<%= ['success','danger','warning','info'].includes(f.type) ? f.type : 'info' %> alert-dismissible fade show d-flex align-items-start gap-2" role="alert">
+      <i data-lucide="<%= f.type === 'success' ? 'check-circle-2' : f.type === 'danger' ? 'alert-octagon' : f.type === 'warning' ? 'alert-triangle' : 'info' %>" class="icon-sm mt-1 flex-shrink-0"></i>
+      <div><%= __(f.message) %></div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="<%= __('Close') %>"></button>
+    </div>
+  <% }) %>
+</div>
+<% } %>

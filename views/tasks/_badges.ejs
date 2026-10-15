@@ -1,0 +1,4 @@
+<span class="prio prio-<%= t.priority %>" title="<%= __('Priority') %>"><%= fmt.label(t.priority) %></span>
+<% if (t.deadline) { %><span class="flag <%= t.isOverdue ? 'flag-overdue' : 'flag-deadline' %>" title="<%= __('Deadline') %>"><i data-lucide="<%= t.isOverdue ? 'alarm-clock' : 'calendar' %>" class="icon-xs"></i><%= t.isOverdue ? __('Overdue') + ' · ' : '' %><%= fmt.formatDate(t.deadline) %></span><% } %>
+<% if (t.status !== 'completed' && t.waitingOn.length) { %><span class="flag flag-waiting" title="<%= __('Waiting on:') %> <%= t.waitingOn.map(function (w) { return w.title; }).join(', ') %>"><i data-lucide="hourglass" class="icon-xs"></i><%= __('Waiting on') %> <%= t.waitingOn.length %></span><% } %>
+<% if (t.status === 'blocked' && t.blockedReason) { %><span class="flag flag-waiting" title="<%= t.blockedReason %>"><i data-lucide="octagon-pause" class="icon-xs"></i><%= __('Blocked') %></span><% } %>

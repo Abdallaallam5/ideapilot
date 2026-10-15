@@ -1,0 +1,51 @@
+<section class="container page-narrow py-5">
+  <h1 class="h3 mb-4"><%= __('Account settings') %></h1>
+  <%- include('../partials/formErrors', { errors }) %>
+  <div class="card surface-card mb-4">
+    <div class="card-body p-4">
+      <h2 class="h5 mb-3"><%= __('Profile and preferences') %></h2>
+      <form action="/settings" method="post">
+        <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+        <div class="mb-3">
+          <label class="form-label" for="name"><%= __('Name') %></label>
+          <input class="form-control <%= errors.name ? 'is-invalid' : '' %>" id="name" name="name" value="<%= values.name %>" maxlength="80" required>
+          <%- include('../partials/fieldError', { field: 'name' }) %>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="defaultTaskView"><%= __('Default task view') %></label>
+          <select class="form-select" id="defaultTaskView" name="defaultTaskView">
+            <option value="list" <%= values.defaultTaskView === 'list' ? 'selected' : '' %>><%= __('List') %></option>
+            <option value="kanban" <%= values.defaultTaskView === 'kanban' ? 'selected' : '' %>><%= __('Kanban board') %></option>
+          </select>
+        </div>
+        <button class="btn btn-primary" type="submit"><%= __('Save settings') %></button>
+      </form>
+    </div>
+  </div>
+  <div class="card surface-card">
+    <div class="card-body p-4">
+      <h2 class="h5 mb-3"><%= __('Change password') %></h2>
+      <form action="/settings/password" method="post">
+        <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+        <div class="mb-3">
+          <label class="form-label" for="currentPassword"><%= __('Current password') %></label>
+          <input class="form-control <%= errors.currentPassword ? 'is-invalid' : '' %>" id="currentPassword" name="currentPassword" type="password" required autocomplete="current-password">
+          <%- include('../partials/fieldError', { field: 'currentPassword' }) %>
+        </div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label" for="newPassword"><%= __('New password') %></label>
+            <input class="form-control <%= errors.newPassword ? 'is-invalid' : '' %>" id="newPassword" name="newPassword" type="password" minlength="8" maxlength="72" required autocomplete="new-password">
+            <%- include('../partials/fieldError', { field: 'newPassword' }) %>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="confirmPassword"><%= __('Confirm new password') %></label>
+            <input class="form-control <%= errors.confirmPassword ? 'is-invalid' : '' %>" id="confirmPassword" name="confirmPassword" type="password" maxlength="72" required autocomplete="new-password">
+            <%- include('../partials/fieldError', { field: 'confirmPassword' }) %>
+          </div>
+        </div>
+        <button class="btn btn-outline-primary" type="submit"><%= __('Change password') %></button>
+      </form>
+    </div>
+  </div>
+</section>

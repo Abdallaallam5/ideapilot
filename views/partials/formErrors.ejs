@@ -1,0 +1,11 @@
+<% if (errors && Object.keys(errors).length) { %>
+<div class="alert alert-danger d-flex gap-2" role="alert">
+  <i data-lucide="alert-circle" class="icon-sm mt-1 flex-shrink-0"></i>
+  <div>
+    <strong><%= __('Please fix the following:') %></strong>
+    <ul class="mb-0 ps-3">
+      <% Object.values(errors).forEach(function (msg) { %><li><%= __(msg) %></li><% }) %>
+    </ul>
+  </div>
+</div>
+<% } %>

@@ -1,0 +1,40 @@
+<div class="mb-3">
+  <label class="form-label" for="title"><%= __('Idea title') %> <span class="text-danger" aria-hidden="true">*</span></label>
+  <input class="form-control form-control-lg <%= errors.title ? 'is-invalid' : '' %>" id="title" name="title" value="<%= values.title || '' %>" maxlength="140" required placeholder="<%= __('e.g. Launch a neighborhood book swap') %>">
+  <%- include('../partials/fieldError', { field: 'title' }) %>
+</div>
+<div class="mb-3">
+  <label class="form-label" for="description"><%= __('Description') %> <span class="text-danger" aria-hidden="true">*</span></label>
+  <textarea class="form-control <%= errors.description ? 'is-invalid' : '' %>" id="description" name="description" rows="4" maxlength="5000" required placeholder="<%= __('What is the idea, and why does it matter to you?') %>"><%= values.description || '' %></textarea>
+  <%- include('../partials/fieldError', { field: 'description' }) %>
+</div>
+<div class="mb-3">
+  <label class="form-label" for="desiredOutcome"><%= __('Intended outcome') %> <span class="optional"><%= __('optional') %></span></label>
+  <textarea class="form-control" id="desiredOutcome" name="desiredOutcome" rows="2" maxlength="2000" placeholder="<%= __('What does success look like?') %>"><%= values.desiredOutcome || '' %></textarea>
+  <%- include('../partials/fieldError', { field: 'desiredOutcome' }) %>
+</div>
+<details class="optional-details mb-3" <%= (values.targetAudience || values.budget || values.availableTime || values.skillsResources || values.constraints) ? 'open' : '' %>>
+  <summary><%= __('More context') %> <span class="optional"><%= __('all optional') %></span></summary>
+  <div class="row g-3 pt-3">
+    <div class="col-12">
+      <label class="form-label" for="targetAudience"><%= __('Target audience') %></label>
+      <input class="form-control" id="targetAudience" name="targetAudience" value="<%= values.targetAudience || '' %>" maxlength="1000" placeholder="<%= __('Who is this for?') %>">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="budget"><%= __('Budget') %></label>
+      <input class="form-control" id="budget" name="budget" value="<%= values.budget || '' %>" maxlength="200" placeholder="<%= __('e.g. Under $500, or none') %>">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" for="availableTime"><%= __('Available time') %></label>
+      <input class="form-control" id="availableTime" name="availableTime" value="<%= values.availableTime || '' %>" maxlength="200" placeholder="<%= __('e.g. 5 hours a week for 3 months') %>">
+    </div>
+    <div class="col-12">
+      <label class="form-label" for="skillsResources"><%= __('Skills and resources') %></label>
+      <textarea class="form-control" id="skillsResources" name="skillsResources" rows="2" maxlength="2000"><%= values.skillsResources || '' %></textarea>
+    </div>
+    <div class="col-12">
+      <label class="form-label" for="constraints"><%= __('Constraints') %></label>
+      <textarea class="form-control" id="constraints" name="constraints" rows="2" maxlength="2000"><%= values.constraints || '' %></textarea>
+    </div>
+  </div>
+</details>

@@ -1,0 +1,40 @@
+<div class="ws-page">
+  <a class="back-link" href="/projects/<%= project._id %>/history"><i data-lucide="arrow-left" class="icon-sm"></i> <%= __('History') %></a>
+  <div class="ws-page-head mt-2">
+    <div>
+      <h1><%= __('Version {v}', { v: plan.version }) %>: <%= __(plan.title) %> <% if (plan.status === 'current') { %><span class="badge text-bg-primary align-middle"><%= __('Current') %></span><% } else { %><span class="badge text-bg-secondary align-middle"><%= __('Archived, read only') %></span><% } %></h1>
+      <p><%= __(plan.changeSummary) %> · <%= fmt.formatDateTime(plan.createdAt) %><%= plan.createdBy ? ' · ' + plan.createdBy.name : '' %></p>
+    </div>
+    <% if (plan.status !== 'current') { %>
+      <div>
+        <form id="restoreThis" action="/projects/<%= project._id %>/plan/versions/<%= plan._id %>/restore" method="post"><input type="hidden" name="_csrf" value="<%= csrfToken() %>"></form>
+        <button class="btn btn-primary btn-sm" type="button" data-confirm="<%= __('Restore version {v}? Your current plan is saved in history first.', { v: plan.version }) %>" data-confirm-label="<%= __('Restore') %>" data-confirm-tone="primary" data-confirm-form="#restoreThis"><i data-lucide="rotate-ccw" class="icon-sm"></i> <%= __('Restore this version') %></button>
+      </div>
+    <% } else { %>
+      <a class="btn btn-light btn-sm" href="/projects/<%= project._id %>/roadmap"><%= __('Open the roadmap') %></a>
+    <% } %>
+  </div>
+  <div class="panel panel-body mb-3">
+    <div class="small"><strong><%= __('Objective:') %></strong> <%= plan.objective || __('None') %></div>
+    <div class="small text-muted mt-1"><%= __(plan.status === 'archived' ? '{done} of {total} tasks completed ({percent}%) when this version was archived.' : '{done} of {total} tasks completed ({percent}%).', { done: progress.completed, total: progress.total, percent: progress.percent }) %></div>
+  </div>
+  <% phases.forEach(function (row, i) { %>
+    <section class="panel mb-3">
+      <div class="panel-head"><h2><span class="phase-index"><%= i + 1 %></span> <%= row.phase.title %></h2><span class="small text-muted"><%= __('{n} task(s)', { n: row.tasks.length }) %></span></div>
+      <div class="panel-body">
+        <% if (row.phase.description) { %><p class="small text-muted"><%= row.phase.description %></p><% } %>
+        <% if (row.phase.milestones.length) { %><p class="small mb-2"><strong><%= __('Milestones:') %></strong> <%= row.phase.milestones.map(function (m) { return m.title + (m.completed ? ' (' + __('reached') + ')' : ''); }).join(', ') %></p><% } %>
+        <% row.tasks.forEach(function (t) { %>
+          <div class="roadmap-task"><span class="status-badge status-<%= t.status %>"><%= fmt.label(t.status) %></span><span class="flex-grow-1 <%= t.status === 'completed' ? 'task-title-done' : '' %>"><%= t.title %></span><span class="prio prio-<%= t.priority %>"><%= fmt.label(t.priority) %></span></div>
+        <% }) %>
+      </div>
+    </section>
+  <% }) %>
+  <% if (unphased.length) { %>
+    <section class="panel mb-3">
+      <div class="panel-head"><h2><%= __('Unphased tasks') %></h2></div>
+      <div class="panel-body"><% unphased.forEach(function (t) { %><div class="roadmap-task"><span class="status-badge status-<%= t.status %>"><%= fmt.label(t.status) %></span><span class="flex-grow-1"><%= t.title %></span><span class="prio prio-<%= t.priority %>"><%= fmt.label(t.priority) %></span></div><% }) %></div>
+    </section>
+  <% } %>
+  <% if (!phases.length && !unphased.length) { %><p class="text-muted"><%= __('This version had no phases or tasks.') %></p><% } %>
+</div>

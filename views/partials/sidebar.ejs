@@ -1,0 +1,19 @@
+<nav class="ws-sidebar" aria-label="<%= __('Workspace sections') %>">
+  <ul class="ws-tabs" role="list">
+    <% tabs.forEach(function (tb) { %>
+      <li>
+        <a class="ws-tab <%= tab === tb.key ? 'active' : '' %>" href="/projects/<%= project._id %>/<%= tb.key %>" <%= tab === tb.key ? 'aria-current=page' : '' %>>
+          <i data-lucide="<%= tb.icon %>"></i><span><%= __(tb.label) %></span>
+          <% if (tb.key === 'tasks' && stats.overdue) { %><span class="ws-tab-badge danger" title="<%= __('Overdue tasks') %>"><%= stats.overdue %></span><% } %>
+          <% if (tb.key === 'history' && pendingProposals) { %><span class="ws-tab-badge" title="<%= __('Proposals waiting for review') %>"><%= pendingProposals %></span><% } %>
+        </a>
+      </li>
+    <% }) %>
+  </ul>
+  <div class="ws-sidebar-meta d-none d-lg-block">
+    <div class="meta-row"><span><%= __('Stage') %></span><span class="stage-pill stage-<%= project.stage %>"><%= fmt.label(project.stage) %></span></div>
+    <div class="meta-row"><span><%= __('Plan') %></span><span>v<%= project.currentPlanVersion %></span></div>
+    <div class="meta-row"><span><%= __('Tasks') %></span><span><%= stats.completed %>/<%= stats.total %></span></div>
+    <% if (stats.blocked) { %><div class="meta-row text-warning-emphasis"><span><%= __('Blocked') %></span><span><%= stats.blocked %></span></div><% } %>
+  </div>
+</nav>

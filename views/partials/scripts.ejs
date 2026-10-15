@@ -1,0 +1,6 @@
+<script type="application/json" id="i18n-strings"><%- safeJson(clientStrings) %></script>
+<script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/vendor/lucide/lucide.min.js"></script>
+<script src="/static/js/main.js"></script>
+<% pageScripts.forEach(function (src) { %><script src="<%= src %>"></script>
+<% }) %>

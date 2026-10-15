@@ -1,0 +1,13 @@
+<details class="inline-add mt-2">
+  <summary><i data-lucide="plus" class="icon-sm"></i> <%= __('Add task') %></summary>
+  <form class="row g-2 mt-1" action="/projects/<%= project._id %>/tasks" method="post">
+    <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+    <input type="hidden" name="returnTo" value="roadmap">
+    <% if (phaseId) { %><input type="hidden" name="phaseId" value="<%= phaseId %>"><% } %>
+    <div class="col-md-6"><label class="visually-hidden" for="qt-title-<%= phaseId || 'none' %>"><%= __('Task title') %></label><input class="form-control form-control-sm" id="qt-title-<%= phaseId || 'none' %>" name="title" placeholder="<%= __('Task title') %>" maxlength="200" required></div>
+    <div class="col-6 col-md-2"><label class="visually-hidden" for="qt-prio-<%= phaseId || 'none' %>"><%= __('Priority') %></label><select class="form-select form-select-sm" id="qt-prio-<%= phaseId || 'none' %>" name="priority"><% C.PRIORITIES.forEach(function (p) { %><option value="<%= p %>" <%= p === 'medium' ? 'selected' : '' %>><%= fmt.label(p) %></option><% }) %></select></div>
+    <div class="col-6 col-md-2"><label class="visually-hidden" for="qt-deadline-<%= phaseId || 'none' %>"><%= __('Deadline') %></label><input class="form-control form-control-sm" type="date" id="qt-deadline-<%= phaseId || 'none' %>" name="deadline" title="<%= __('Optional deadline') %>"></div>
+    <div class="col-md-2 d-grid"><button class="btn btn-primary btn-sm" type="submit"><%= __('Add') %></button></div>
+    <div class="col-12"><a class="small" href="/projects/<%= project._id %>/tasks/new<%= phaseId ? '?phaseId=' + phaseId : '' %>"><%= __('Open the full task form (dependencies, deliverables, criteria)') %></a></div>
+  </form>
+</details>

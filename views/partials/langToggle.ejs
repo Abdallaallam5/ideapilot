@@ -1,0 +1,4 @@
+<% const otherLang = lang === 'ar' ? 'en' : 'ar'; %>
+<a class="<%= typeof toggleClass !== 'undefined' ? toggleClass : 'btn btn-ghost btn-sm' %> lang-toggle" href="/lang/<%= otherLang %>?next=<%= encodeURIComponent(currentUrl) %>" hreflang="<%= otherLang %>" lang="<%= otherLang %>" data-lang-toggle title="<%= otherLang === 'ar' ? 'التبديل إلى العربية' : 'Switch to English' %>">
+  <i data-lucide="languages" class="icon-sm"></i><span><%= otherLang === 'ar' ? 'العربية' : 'English' %></span>
+</a>

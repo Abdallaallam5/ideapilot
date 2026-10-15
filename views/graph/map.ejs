@@ -1,0 +1,156 @@
+<% pageScripts.push('/vendor/cytoscape/cytoscape.min.js', '/static/js/graph-styles.js', '/static/js/graph.js') %>
+<div class="map-layout" data-map>
+  <section class="map-stage" aria-label="<%= __('Idea map') %>">
+    <div class="map-toolbar" role="toolbar" aria-label="<%= __('Map tools') %>">
+      <div class="dropdown">
+        <button class="btn tb-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i data-lucide="plus" class="icon-sm"></i> <%= __('Add node') %></button>
+        <ul class="dropdown-menu dropdown-menu-dark-ws">
+          <% C.NODE_TYPES.forEach(function (t) { %>
+            <li><button class="dropdown-item" type="button" data-add-node="<%= t %>"><span class="type-dot" data-type-dot="<%= t %>"></span><%= fmt.label(t) %></button></li>
+          <% }) %>
+        </ul>
+      </div>
+      <button class="btn tb-btn" type="button" data-connect-toggle title="<%= __('Connect the selected node to another node (C)') %>" aria-pressed="false"><i data-lucide="spline" class="icon-sm"></i> <%= __('Connect') %></button>
+      <label class="visually-hidden" for="newEdgeRel"><%= __('Relationship for new connections') %></label>
+      <select id="newEdgeRel" class="form-select form-select-sm tb-select" data-new-edge-rel title="<%= __('Relationship used for new connections') %>">
+        <% C.RELATIONSHIP_TYPES.forEach(function (r) { %><option value="<%= r %>" <%= r === 'supports' ? 'selected' : '' %>><%= __(r.replace(/_/g, ' ')) %></option><% }) %>
+      </select>
+      <span class="tb-sep" aria-hidden="true"></span>
+      <button class="btn tb-btn" type="button" data-zoom="in" title="<%= __('Zoom in') %>" aria-label="<%= __('Zoom in') %>"><i data-lucide="zoom-in" class="icon-sm"></i></button>
+      <button class="btn tb-btn" type="button" data-zoom="out" title="<%= __('Zoom out') %>" aria-label="<%= __('Zoom out') %>"><i data-lucide="zoom-out" class="icon-sm"></i></button>
+      <button class="btn tb-btn" type="button" data-fit title="<%= __('Fit graph to screen') %>"><i data-lucide="maximize" class="icon-sm"></i> <%= __('Fit') %></button>
+      <button class="btn tb-btn" type="button" data-arrange title="<%= __('Automatically arrange all nodes') %>"><i data-lucide="layout-dashboard" class="icon-sm"></i> <%= __('Arrange') %></button>
+      <span class="tb-sep" aria-hidden="true"></span>
+      <div class="dropdown">
+        <button class="btn tb-btn dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false"><i data-lucide="filter" class="icon-sm"></i> <%= __('Filter') %> <span data-filter-count></span></button>
+        <div class="dropdown-menu dropdown-menu-dark-ws p-2" style="min-width: 200px">
+          <% C.NODE_TYPES.forEach(function (t) { %>
+            <div class="form-check px-4 py-1">
+              <input class="form-check-input" type="checkbox" id="filter-<%= t %>" value="<%= t %>" data-type-filter checked>
+              <label class="form-check-label d-flex align-items-center gap-2" for="filter-<%= t %>"><span class="type-dot" data-type-dot="<%= t %>"></span><%= fmt.label(t) %></label>
+            </div>
+          <% }) %>
+          <div class="d-flex gap-2 px-2 pt-2"><button class="btn btn-sm btn-outline-light flex-fill" type="button" data-filter-all><%= __('All') %></button><button class="btn btn-sm btn-outline-light flex-fill" type="button" data-filter-none><%= __('None') %></button></div>
+        </div>
+      </div>
+      <label class="visually-hidden" for="mapSearch"><%= __('Search the map') %></label>
+      <input id="mapSearch" class="form-control form-control-sm tb-search" type="search" placeholder="<%= __('Search nodes…') %>" data-map-search maxlength="80">
+    </div>
+    <div class="map-canvas">
+      <div id="cy" aria-label="<%= __('Interactive idea map. Use the toolbar to add and connect nodes, and the panel on the right to edit them.') %>"></div>
+      <div class="map-hint" data-map-hint hidden></div>
+      <div class="map-legend" aria-hidden="true">
+        <div class="lg-row mb-1" data-legend-nodes></div>
+        <div class="lg-row" data-legend-edges></div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="inspector" aria-label="<%= __('Details panel') %>" data-inspector>
+    <div data-inspector-empty>
+      <h2><i data-lucide="mouse-pointer-click" class="icon-sm"></i> <%= __('Details') %></h2>
+      <div class="inspector-empty">
+        <p><%= __('Select a node or connection to see and edit its details.') %></p>
+        <ul class="small">
+          <li><%- __('Add nodes from <strong>Add node</strong> in the toolbar.') %></li>
+          <li><%= __('Drag nodes to move them. Positions save automatically.') %></li>
+          <li><%- __('To connect, select a node, press <strong>Connect</strong> (or <kbd>C</kbd>), then click the target.') %></li>
+          <li><%- __('Press <kbd>Delete</kbd> to remove the selected item.') %></li>
+        </ul>
+        <div class="inspector-section">
+          <h3><%= __('On this map') %></h3>
+          <div class="count-grid" data-type-counts></div>
+        </div>
+      </div>
+    </div>
+
+    <form data-node-form hidden novalidate>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0" data-node-badge-wrap></h2>
+        <button type="button" class="btn-close btn-close-white" data-inspector-close aria-label="<%= __('Close details') %>"></button>
+      </div>
+      <div class="mb-2">
+        <label class="form-label" for="nodeTitle"><%= __('Title') %></label>
+        <input id="nodeTitle" class="form-control" name="title" maxlength="140" required>
+        <div class="invalid-feedback" data-error-for="title"></div>
+      </div>
+      <div class="mb-2">
+        <label class="form-label" for="nodeDescription"><%= __('Description') %></label>
+        <textarea id="nodeDescription" class="form-control" name="description" rows="4" maxlength="4000"></textarea>
+      </div>
+      <div class="row g-2 mb-3">
+        <div class="col-12">
+          <label class="form-label" for="nodeType"><%= __('Type') %></label>
+          <select id="nodeType" class="form-select" name="type"><% C.NODE_TYPES.forEach(function (t) { %><option value="<%= t %>"><%= fmt.label(t) %></option><% }) %></select>
+        </div>
+        <div class="col-6">
+          <label class="form-label" for="nodeStatus"><%= __('Status') %></label>
+          <select id="nodeStatus" class="form-select" name="status"><% C.NODE_STATUSES.forEach(function (s) { %><option value="<%= s %>"><%= fmt.label(s) %></option><% }) %></select>
+        </div>
+        <div class="col-6">
+          <label class="form-label" for="nodePriority"><%= __('Priority') %></label>
+          <select id="nodePriority" class="form-select" name="priority"><% C.PRIORITIES.forEach(function (p) { %><option value="<%= p %>"><%= fmt.label(p) %></option><% }) %></select>
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary btn-sm flex-fill" type="submit"><i data-lucide="save" class="icon-sm"></i> <%= __('Save changes') %></button>
+        <button class="btn btn-outline-danger btn-sm" type="button" data-delete-node title="<%= __('Delete node') %>"><i data-lucide="trash-2" class="icon-sm"></i><span class="visually-hidden"><%= __('Delete node') %></span></button>
+      </div>
+
+      <div class="inspector-section">
+        <h3><%= __('Connections') %></h3>
+        <ul class="conn-list" data-node-connections></ul>
+        <button class="btn btn-outline-light btn-sm mt-2" type="button" data-connect-from-panel><i data-lucide="spline" class="icon-sm"></i> <%= __('Connect to another node') %></button>
+      </div>
+
+      <div class="inspector-section">
+        <h3><%= __('Linked tasks') %></h3>
+        <ul class="conn-list" data-node-tasks></ul>
+        <a class="btn btn-outline-light btn-sm mt-2" href="#" data-create-task-link><i data-lucide="plus" class="icon-sm"></i> <%= __('Create a task for this node') %></a>
+      </div>
+    </form>
+
+    <form data-replan-form action="/projects/<%= project._id %>/replan" method="post" class="inspector-section" hidden>
+      <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+      <input type="hidden" name="nodeId" value="" data-replan-node>
+      <div class="replan-box">
+        <h3 class="mb-2 d-flex align-items-center gap-1"><i data-lucide="git-branch" class="icon-xs"></i> <%= __('Did this change?') %></h3>
+        <p class="small mb-2 text-muted"><%= __('IdeaPilot will trace what this affects on the map and in your tasks, then show proposed changes for you to accept or reject. Nothing changes until you approve.') %></p>
+        <div class="form-check"><input class="form-check-input" type="radio" name="changeType" id="ctInvalid" value="invalidated" checked><label class="form-check-label" for="ctInvalid"><%= __('It turned out to be wrong (invalidated)') %></label></div>
+        <div class="form-check mb-2"><input class="form-check-input" type="radio" name="changeType" id="ctChanged" value="changed"><label class="form-check-label" for="ctChanged"><%= __('It changed significantly') %></label></div>
+        <label class="form-label" for="replanNote"><%= __('What happened?') %> <span class="optional"><%= __('optional') %></span></label>
+        <textarea id="replanNote" class="form-control mb-2" name="note" rows="2" maxlength="1000"></textarea>
+        <% if (aiStatus.enabled) { %>
+          <div class="form-check mb-2"><input class="form-check-input" type="checkbox" name="useAI" id="replanAI" value="true"><label class="form-check-label" for="replanAI"><%= __('Also ask the AI for alternative actions') %></label></div>
+        <% } %>
+        <button class="btn btn-warning btn-sm w-100" type="submit"><i data-lucide="route" class="icon-sm"></i> <%= __('Analyze impact and propose a replan') %></button>
+      </div>
+    </form>
+
+    <form data-edge-form hidden novalidate>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0"><i data-lucide="spline" class="icon-sm"></i> <%= __('Connection') %></h2>
+        <button type="button" class="btn-close btn-close-white" data-inspector-close aria-label="<%= __('Close details') %>"></button>
+      </div>
+      <p class="small mb-3" data-edge-summary></p>
+      <div class="mb-2">
+        <label class="form-label" for="edgeRel"><%= __('Relationship') %></label>
+        <select id="edgeRel" class="form-select" name="relationship"><% C.RELATIONSHIP_TYPES.forEach(function (r) { %><option value="<%= r %>"><%= __(r.replace(/_/g, ' ')) %></option><% }) %></select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="edgeDescription"><%= __('Description') %> <span class="optional"><%= __('optional') %></span></label>
+        <textarea id="edgeDescription" class="form-control" name="description" rows="3" maxlength="1000"></textarea>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary btn-sm flex-fill" type="submit"><i data-lucide="save" class="icon-sm"></i> <%= __('Save connection') %></button>
+        <button class="btn btn-outline-danger btn-sm" type="button" data-delete-edge title="<%= __('Delete connection') %>"><i data-lucide="trash-2" class="icon-sm"></i><span class="visually-hidden"><%= __('Delete connection') %></span></button>
+      </div>
+    </form>
+  </aside>
+</div>
+<script type="application/json" id="graphData"><%- safeJson({
+  projectId: String(project._id),
+  nodes: graph.nodes,
+  edges: graph.edges,
+  linkedTasks: linkedTasks,
+}) %></script>

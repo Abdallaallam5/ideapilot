@@ -1,0 +1,33 @@
+<section class="auth-wrap">
+  <div class="auth-card">
+    <h1 class="h3 mb-1"><%= __('Create your account') %></h1>
+    <p class="text-muted mb-4"><%= __('Start turning ideas into plans in a couple of minutes.') %></p>
+    <%- include('../partials/formErrors', { errors }) %>
+    <form action="/register" method="post" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+      <div class="mb-3">
+        <label class="form-label" for="name"><%= __('Name') %></label>
+        <input class="form-control <%= errors.name ? 'is-invalid' : '' %>" id="name" name="name" value="<%= values.name || '' %>" maxlength="80" required autocomplete="name" <%= errors.name ? 'aria-describedby=name-error' : '' %>>
+        <%- include('../partials/fieldError', { field: 'name' }) %>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="email"><%= __('Email') %></label>
+        <input class="form-control <%= errors.email ? 'is-invalid' : '' %>" id="email" name="email" type="email" value="<%= values.email || '' %>" maxlength="254" required autocomplete="email">
+        <%- include('../partials/fieldError', { field: 'email' }) %>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="password"><%= __('Password') %></label>
+        <input class="form-control <%= errors.password ? 'is-invalid' : '' %>" id="password" name="password" type="password" minlength="8" maxlength="72" required autocomplete="new-password" aria-describedby="passwordHelp">
+        <div class="form-text" id="passwordHelp"><%= __('At least 8 characters, with a letter and a number.') %></div>
+        <%- include('../partials/fieldError', { field: 'password' }) %>
+      </div>
+      <div class="mb-4">
+        <label class="form-label" for="confirmPassword"><%= __('Confirm password') %></label>
+        <input class="form-control <%= errors.confirmPassword ? 'is-invalid' : '' %>" id="confirmPassword" name="confirmPassword" type="password" maxlength="72" required autocomplete="new-password">
+        <%- include('../partials/fieldError', { field: 'confirmPassword' }) %>
+      </div>
+      <button class="btn btn-primary w-100" type="submit"><%= __('Create account') %></button>
+    </form>
+    <p class="text-center small mt-4 mb-0"><%= __('Already have an account?') %> <a href="/login"><%= __('Log in') %></a></p>
+  </div>
+</section>

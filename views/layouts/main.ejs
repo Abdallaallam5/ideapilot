@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+<head>
+<%- include('../partials/head') %>
+</head>
+<body class="<%= bodyClass %>">
+  <a class="skip-link" href="#main"><%= __("Skip to content") %></a>
+  <%- include('../partials/header') %>
+  <main id="main" tabindex="-1">
+    <%- include('../partials/flash') %>
+    <%- body %>
+  </main>
+  <%- include('../partials/footer') %>
+  <%- include('../partials/confirmModal') %>
+  <%- include('../partials/scripts') %>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<%
+  const a = project.analysis || {};
+  const sections = [
+    { key: 'goals', label: 'Goals', icon: 'target', color: '#10b981' },
+    { key: 'coreComponents', label: 'Core components', icon: 'boxes', color: '#6d5efc' },
+    { key: 'assumptions', label: 'Assumptions', icon: 'help-circle', color: '#f59e0b' },
+    { key: 'risks', label: 'Risks', icon: 'shield-alert', color: '#ef4444' },
+    { key: 'unknowns', label: 'Unknowns', icon: 'circle-help', color: '#64748b' },
+    { key: 'opportunities', label: 'Opportunities', icon: 'trending-up', color: '#06b6d4' },
+    { key: 'nextSteps', label: 'Next steps', icon: 'footprints', color: '#3b82f6' },
+  ];
+%>
+<div class="ws-page">
+  <div class="ws-page-head">
+    <div>
+      <h1><%= __('Analysis') %></h1>
+      <p><%= a.updatedAt ? __('Last updated {when}.', { when: fmt.timeAgo(a.updatedAt) }) : __('Not filled in yet. Write it yourself, pull items from your map, or ask the AI copilot.') %></p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <form action="/projects/<%= project._id %>/analysis/sync-map" method="post">
+        <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+        <button class="btn btn-outline-primary btn-sm" type="submit" title="<%= __('Add goals, assumptions, risks and resources from the map') %>"><i data-lucide="network" class="icon-sm"></i> <%= __('Pull from map') %></button>
+      </form>
+      <% if (aiStatus.enabled) { %>
+        <form action="/projects/<%= project._id %>/ai/analyze" method="post" data-ai-inline>
+          <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+          <button class="btn btn-copilot btn-sm" type="submit"><i data-lucide="sparkles" class="icon-sm"></i> <%= __('Draft with AI') %></button>
+        </form>
+      <% } %>
+      <% if (!editing) { %><a class="btn btn-primary btn-sm" href="/projects/<%= project._id %>/analysis?edit=1"><i data-lucide="pencil" class="icon-sm"></i> <%= __('Edit analysis') %></a><% } %>
+    </div>
+  </div>
+
+  <% if (editing) { %>
+    <form class="panel" action="/projects/<%= project._id %>/analysis" method="post">
+      <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+      <div class="panel-head"><h2><i data-lucide="pencil" class="icon-sm"></i> <%= __('Edit analysis') %></h2><span class="small text-muted"><%= __('One item per line') %></span></div>
+      <div class="panel-body">
+        <div class="mb-3">
+          <label class="form-label" for="summary"><%= __('Summary') %></label>
+          <textarea class="form-control" id="summary" name="summary" rows="4" maxlength="5000"><%= a.summary || '' %></textarea>
+        </div>
+        <div class="row g-3">
+          <% sections.forEach(function (s) { %>
+            <div class="col-md-6">
+              <label class="form-label d-flex align-items-center gap-2" for="<%= s.key %>"><i data-lucide="<%= s.icon %>" class="icon-sm" style="color: <%= s.color %>"></i><%= __(s.label) %></label>
+              <textarea class="form-control" id="<%= s.key %>" name="<%= s.key %>" rows="5" maxlength="20000"><%= (a[s.key] || []).join('\n') %></textarea>
+            </div>
+          <% }) %>
+        </div>
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <a class="btn btn-light" href="/projects/<%= project._id %>/analysis"><%= __('Cancel') %></a>
+          <button class="btn btn-primary" type="submit"><%= __('Save analysis') %></button>
+        </div>
+      </div>
+    </form>
+  <% } else { %>
+    <div class="panel mb-3">
+      <div class="panel-head"><h2><i data-lucide="file-text" class="icon-sm"></i> <%= __('Summary') %></h2></div>
+      <div class="panel-body">
+        <% if (a.summary) { %><p class="mb-0" style="white-space: pre-line"><%= a.summary %></p><% } else { %><p class="text-muted fst-italic mb-0"><%= __('No summary yet.') %> <a href="/projects/<%= project._id %>/analysis?edit=1"><%= __('Write one') %></a></p><% } %>
+      </div>
+    </div>
+    <div class="analysis-grid">
+      <% sections.forEach(function (s) { const items = a[s.key] || []; %>
+        <section class="panel analysis-card">
+          <div class="panel-head">
+            <h2><span class="section-icon" style="background: <%= s.color %>22; color: <%= s.color %>"><i data-lucide="<%= s.icon %>"></i></span><%= __(s.label) %></h2>
+            <span class="small text-muted"><%= items.length %></span>
+          </div>
+          <div class="panel-body">
+            <% if (items.length) { %><ul><% items.forEach(function (i) { %><li><%= i %></li><% }) %></ul><% } else { %><p class="empty mb-0"><%= __('Nothing here yet.') %></p><% } %>
+          </div>
+        </section>
+      <% }) %>
+    </div>
+  <% } %>
+</div>

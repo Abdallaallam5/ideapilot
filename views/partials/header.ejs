@@ -1,0 +1,50 @@
+<header class="site-header">
+  <nav class="navbar navbar-expand-lg" aria-label="<%= __('Main navigation') %>">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="<%= currentUser ? '/dashboard' : '/' %>"><%- include('logo') %></a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="<%= __('Toggle navigation') %>">
+        <i data-lucide="menu"></i>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNav">
+        <% if (currentUser) { %>
+          <ul class="navbar-nav me-auto ms-lg-4">
+            <li class="nav-item"><a class="nav-link <%= path === '/dashboard' ? 'active' : '' %>" href="/dashboard" <%= path === '/dashboard' ? 'aria-current=page' : '' %>><%= __('Dashboard') %></a></li>
+            <li class="nav-item"><a class="nav-link <%= path === '/projects/new' ? 'active' : '' %>" href="/projects/new"><%= __('New idea') %></a></li>
+          </ul>
+          <div class="d-flex align-items-center gap-2">
+            <%- include('langToggle') %>
+            <a class="btn btn-primary btn-sm d-none d-lg-inline-flex align-items-center gap-1" href="/projects/new"><i data-lucide="plus" class="icon-sm"></i> <%= __('Create idea') %></a>
+            <div class="dropdown">
+              <button class="btn btn-ghost btn-sm dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="avatar" aria-hidden="true"><%= currentUser.name.charAt(0).toUpperCase() %></span>
+                <span class="d-none d-sm-inline"><%= currentUser.name %></span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><span class="dropdown-item-text small text-muted"><%= currentUser.email %></span></li>
+                <li><a class="dropdown-item" href="/settings"><i data-lucide="settings" class="icon-sm me-2"></i><%= __('Settings') %></a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <form action="/logout" method="post">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+                    <button class="dropdown-item" type="submit"><i data-lucide="log-out" class="icon-sm me-2"></i><%= __('Log out') %></button>
+                  </form>
+                </li>
+              </ul>
+            </div>
+          </div>
+        <% } else { %>
+          <ul class="navbar-nav me-auto ms-lg-4">
+            <li class="nav-item"><a class="nav-link" href="/#features"><%= __('Features') %></a></li>
+            <li class="nav-item"><a class="nav-link" href="/#how-it-works"><%= __('How it works') %></a></li>
+            <li class="nav-item"><a class="nav-link" href="/#faq"><%= __('FAQ') %></a></li>
+          </ul>
+          <div class="d-flex align-items-center gap-2">
+            <%- include('langToggle') %>
+            <a class="btn btn-ghost btn-sm" href="/login"><%= __('Log in') %></a>
+            <a class="btn btn-primary btn-sm" href="/register"><%= __('Get started free') %></a>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </nav>
+</header>
