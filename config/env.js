@@ -14,7 +14,11 @@ const intWithDefault = (def) =>
 const schema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().int().positive().default(5000),
-  MONGODB_URI: z.string().trim().min(1, 'MONGODB_URI is required'),
+  // Pasted values often keep quotes or the "MONGODB_URI=" prefix; strip those before checking.
+  MONGODB_URI: z
+    .string()
+    .transform((v) => v.trim().replace(/^MONGODB_URI\s*=\s*/, '').replace(/^(['"])(.*)\1$/, '$2').trim())
+    .pipe(z.string().min(1, 'MONGODB_URI is required').regex(/^mongodb(\+srv)?:\/\//, 'MONGODB_URI must start with mongodb+srv:// or mongodb://')),
   SESSION_SECRET: z.string().min(32, 'SESSION_SECRET must be at least 32 characters'),
   SESSION_NAME: z.string().trim().min(1).default('ideapilot.sid'),
   SESSION_MAX_AGE_HOURS: intWithDefault(24),
