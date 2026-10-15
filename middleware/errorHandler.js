@@ -5,6 +5,7 @@ const logger = require('../utils/logger');
 const { wantsJson } = require('../utils/http');
 
 function notFoundHandler(req, res) {
+  logger.warn('No route matched', { method: req.method, path: req.path, url: req.originalUrl });
   if (wantsJson(req)) return res.status(404).json({ error: 'Not found.' });
   return res.status(404).render('errors/404', { title: 'Page not found' });
 }
@@ -33,7 +34,7 @@ function errorHandler(err, req, res, next) {
   if (status >= 500) {
     logger.error('Unhandled error', { error: err, stack: err.stack, method: req.method, path: req.path, userId: req.user?._id });
   } else {
-    logger.debug('Request error', { status, message, path: req.path });
+    logger[status === 404 ? 'warn' : 'debug']('Request error', { status, message: err.message, path: req.path, errorName: err.name });
   }
 
   if (res.headersSent) return;
