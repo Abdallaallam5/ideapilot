@@ -142,4 +142,15 @@ function createApp(options = {}) {
   return app;
 }
 
-module.exports = { createApp };
+/**
+ * Hosts that look for an Express app in app.js (such as Vercel's Express preset) need a
+ * function as the default export. It hands the request to the serverless entry in
+ * api/index.js, which connects to MongoDB once and builds the app. server.js and the
+ * tests keep using createApp.
+ */
+function handler(req, res) {
+  return require('./api/index')(req, res);
+}
+handler.createApp = createApp;
+
+module.exports = handler;
