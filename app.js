@@ -72,11 +72,8 @@ function createApp(options = {}) {
 
   const staticOpts = { maxAge: env.isProduction ? '7d' : 0, index: false };
   app.use('/static', express.static(path.join(__dirname, 'public'), staticOpts));
-  const vendor = (p) => path.join(__dirname, 'node_modules', p);
-  app.use('/vendor/bootstrap', express.static(vendor('bootstrap/dist'), staticOpts));
-  app.use('/vendor/cytoscape', express.static(vendor('cytoscape/dist'), staticOpts));
-  app.use('/vendor/lucide', express.static(vendor('lucide/dist/umd'), staticOpts));
-  app.use('/vendor/fonts/cairo', express.static(vendor('@fontsource/cairo'), staticOpts));
+  // Browser libraries are copied into public/vendor by `npm run vendor`.
+  app.use('/vendor', express.static(path.join(__dirname, 'public', 'vendor'), staticOpts));
   app.get('/favicon.ico', (req, res) => res.redirect(301, '/static/images/logo.svg'));
 
   app.get('/healthz', (req, res) => {

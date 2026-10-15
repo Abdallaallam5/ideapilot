@@ -60,7 +60,7 @@ Workflow: **Idea → Map → Plan → Execute**.
 | AI | Official Google Gen AI SDK (`@google/genai`) |
 | Tests | Node's built-in test runner, Supertest, mongodb-memory-server |
 
-There is no frontend framework (no React, Vue, Angular, Next or Nuxt) and no build step. Bootstrap, Cytoscape and Lucide are served directly from `node_modules` under `/vendor/...`.
+There is no frontend framework (no React, Vue, Angular, Next or Nuxt) and no build step. Bootstrap, Cytoscape, Lucide and the Cairo font are copied from `node_modules` into `public/vendor` (served under `/vendor/...`) and committed, so hosts that do not ship `node_modules` files, such as Vercel, still serve them. After upgrading one of these packages, run `npm run vendor`.
 
 ## Quick start
 

@@ -4,7 +4,7 @@
   "functions": {
     "api/index.js": {
       "maxDuration": 60,
-      "includeFiles": "{views,locales,public}/**,node_modules/{bootstrap/dist,cytoscape/dist,lucide/dist/umd,@fontsource/cairo}/**"
+      "includeFiles": "{views,locales,public}/**"
     }
   },
   "rewrites": [
