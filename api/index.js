@@ -38,5 +38,13 @@ module.exports = async (req, res) => {
     res.end('IdeaPilot could not start. Check the environment variables and the MongoDB connection in the Vercel logs.');
     return;
   }
+  // Vercel's Node runtime adds its own helpers (res.redirect, res.status, res.send,
+  // res.json, req.query) as own properties. They shadow Express's versions; Vercel's
+  // redirect defaults to 307, which makes browsers re-send a form POST to the redirect
+  // target. Remove them so Express handles the request itself.
+  for (const key of ['redirect', 'status', 'send', 'json']) {
+    if (Object.prototype.hasOwnProperty.call(res, key)) delete res[key];
+  }
+  if (Object.prototype.hasOwnProperty.call(req, 'query')) delete req.query;
   return app(req, res);
 };
