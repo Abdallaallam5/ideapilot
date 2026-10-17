@@ -13,6 +13,7 @@
             <a class="btn btn-primary btn-lg" href="/register"><%= __('Start for free') %> <i data-lucide="arrow-right" class="icon-sm"></i></a>
             <a class="btn btn-outline-light btn-lg" href="#how-it-works"><%= __('See how it works') %></a>
           <% } %>
+          <a class="btn btn-outline-light btn-lg" href="/guide"><i data-lucide="circle-play" class="icon-sm"></i> <%= __('Watch the video guide') %></a>
         </div>
         <ul class="hero-points">
           <li><i data-lucide="check" class="icon-xs"></i> <%= __('Works fully without AI') %></li>
@@ -87,6 +88,7 @@
         <div class="col-md-6 col-lg-3"><div class="step-card"><span class="step-num"><%= s.n %></span><h3 class="h6"><%= __(s.title) %></h3><p><%= __(s.text) %></p></div></div>
       <% }) %>
     </div>
+    <p class="text-center mt-4 mb-0"><a class="btn btn-primary" href="/guide"><i data-lucide="circle-play" class="icon-sm"></i> <%= __('Watch the full walkthrough (3 min)') %></a></p>
     <div class="example-flow mt-5">
       <h3 class="h5 mb-3"><%= __('Example: learning to play the piano in six months') %></h3>
       <div class="row g-3">

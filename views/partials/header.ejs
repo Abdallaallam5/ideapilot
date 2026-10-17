@@ -10,6 +10,7 @@
           <ul class="navbar-nav me-auto ms-lg-4">
             <li class="nav-item"><a class="nav-link <%= path === '/dashboard' ? 'active' : '' %>" href="/dashboard" <%= path === '/dashboard' ? 'aria-current=page' : '' %>><%= __('Dashboard') %></a></li>
             <li class="nav-item"><a class="nav-link <%= path === '/projects/new' ? 'active' : '' %>" href="/projects/new"><%= __('New idea') %></a></li>
+            <li class="nav-item"><a class="nav-link <%= path === '/guide' ? 'active' : '' %>" href="/guide" <%= path === '/guide' ? 'aria-current=page' : '' %>><%= __('Video guide') %></a></li>
           </ul>
           <div class="d-flex align-items-center gap-2">
             <%- include('langToggle') %>
@@ -37,6 +38,7 @@
             <li class="nav-item"><a class="nav-link" href="/#features"><%= __('Features') %></a></li>
             <li class="nav-item"><a class="nav-link" href="/#how-it-works"><%= __('How it works') %></a></li>
             <li class="nav-item"><a class="nav-link" href="/#faq"><%= __('FAQ') %></a></li>
+            <li class="nav-item"><a class="nav-link <%= path === '/guide' ? 'active' : '' %>" href="/guide"><%= __('Video guide') %></a></li>
           </ul>
           <div class="d-flex align-items-center gap-2">
             <%- include('langToggle') %>
