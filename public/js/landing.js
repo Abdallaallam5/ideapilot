@@ -4,7 +4,7 @@
   var el = document.getElementById('landingGraph');
   var __ = window.IdeaPilot.__;
   if (!el || !window.cytoscape || !window.IdeaPilotGraph) return;
-  var n = function (id, type, title, x, y) { return { data: { id: id, type: type, title: title }, position: { x: x, y: y } }; };
+  var n = function (id, type, title, x, y) { return { data: { id: id, type: type, title: title }, position: { x: x * 1.35, y: y * 1.25 } }; };
   var e = function (s, t, rel) { return { data: { id: s + t, source: s, target: t, relationship: rel, label: window.IdeaPilotGraph.RELATIONSHIPS[rel].label } }; };
   var cy = window.cytoscape({
     container: el,

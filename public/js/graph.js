@@ -127,7 +127,11 @@
     span.className = 'type-badge';
     span.style.background = t.color;
     span.style.color = t.text;
-    span.textContent = t.label;
+    var img = document.createElement('img');
+    img.src = G.iconUri(type in G.NODE_TYPES ? type : 'note');
+    img.alt = '';
+    span.appendChild(img);
+    span.appendChild(document.createTextNode(t.label));
     return span;
   }
 
@@ -137,6 +141,7 @@
     Object.keys(G.NODE_TYPES).forEach(function (type) {
       var count = cy.nodes('[type="' + type + '"]').length;
       var cell = document.createElement('div');
+      cell.appendChild(G.typeChip(type, 22));
       var strong = document.createElement('strong');
       strong.textContent = String(count);
       cell.appendChild(strong);
@@ -448,6 +453,19 @@
     }
   });
 
+  function arrowSvg(r) {
+    var dash = r.style === 'dashed' ? ' stroke-dasharray="5 3"' : r.style === 'dotted' ? ' stroke-dasharray="1.5 3"' : '';
+    var head = {
+      triangle: '<path d="M30 6 L22 1.5 L22 10.5 Z" fill="' + r.color + '"/>',
+      vee: '<path d="M22 1.5 L30 6 L22 10.5" fill="none" stroke="' + r.color + '" stroke-width="2"/>',
+      tee: '<path d="M29 0.5 V11.5" stroke="' + r.color + '" stroke-width="3"/>',
+      diamond: '<path d="M30 6 L25.5 2 L21 6 L25.5 10 Z" fill="' + r.color + '"/>',
+      circle: '<circle cx="26" cy="6" r="3.5" fill="' + r.color + '"/>'
+    }[r.arrow] || '';
+    var end = r.arrow === 'none' ? 30 : 22;
+    return '<svg width="32" height="12" viewBox="0 0 32 12" aria-hidden="true"><line x1="1" y1="6" x2="' + end + '" y2="6" stroke="' + r.color + '" stroke-width="2.5" stroke-linecap="round"' + dash + '/>' + head + '</svg>';
+  }
+
   function renderLegendFilters() {
     var nodesEl = document.querySelector('[data-legend-nodes]');
     var edgesEl = document.querySelector('[data-legend-edges]');
@@ -455,10 +473,7 @@
     Object.keys(G.NODE_TYPES).forEach(function (k) {
       var item = document.createElement('span');
       item.className = 'lg-item';
-      var sw = document.createElement('span');
-      sw.className = 'sw';
-      sw.style.background = G.NODE_TYPES[k].color;
-      item.appendChild(sw);
+      item.appendChild(G.typeChip(k));
       item.appendChild(document.createTextNode(G.NODE_TYPES[k].label));
       nodesEl.appendChild(item);
     });
@@ -468,16 +483,15 @@
       item.className = 'lg-item';
       var ln = document.createElement('span');
       ln.className = 'ln';
-      ln.style.borderTopColor = r.color;
-      ln.style.borderTopStyle = r.style;
+      ln.innerHTML = arrowSvg(r);
       item.appendChild(ln);
       item.appendChild(document.createTextNode(r.label));
       edgesEl.appendChild(item);
     });
   }
   document.querySelectorAll('[data-type-dot]').forEach(function (dot) {
-    var t = G.NODE_TYPES[dot.getAttribute('data-type-dot')];
-    if (t) dot.style.background = t.color;
+    var type = dot.getAttribute('data-type-dot');
+    if (G.NODE_TYPES[type]) dot.replaceWith(G.typeChip(type));
   });
 
   function updateEmptyHint() {
