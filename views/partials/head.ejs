@@ -3,7 +3,8 @@
 <title><%= String(title).split(' · ').map(function (part, i, all) { return i === all.length - 1 ? __(part) : part; }).join(' · ') %></title>
 <meta name="description" content="<%= __('IdeaPilot helps you turn ideas into visual maps, actionable plans and trackable tasks.') %>">
 <% if (currentUser) { %><meta name="csrf-token" content="<%= csrfToken() %>"><% } %>
-<link rel="icon" href="/static/images/logo.svg" type="image/svg+xml">
+<link rel="icon" href="/static/images/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="/static/images/apple-touch-icon.png">
 <link rel="stylesheet" href="/vendor/bootstrap/css/<%= dir === 'rtl' ? 'bootstrap.rtl.min.css' : 'bootstrap.min.css' %>">
 <% if (lang === 'ar') { %><link rel="stylesheet" href="/vendor/fonts/cairo/400.css">
 <link rel="stylesheet" href="/vendor/fonts/cairo/600.css">

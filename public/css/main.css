@@ -69,6 +69,9 @@ main:focus { outline: none; }
 .site-header .nav-link { font-weight: 600; color: var(--ip-ink-muted); border-radius: 8px; padding: .4rem .8rem !important; }
 .site-header .nav-link:hover, .site-header .nav-link.active { color: var(--ip-violet-600); background: rgba(91, 61, 245, .07); }
 .brand-mark { display: inline-flex; }
+.brand-mark img { width: 32px; height: 32px; object-fit: contain; }
+.brand-accent { color: #4b3ff0; }
+body.landing .site-header .brand-accent, .ws-brand .brand-accent { color: #8d9bff; }
 .brand-name { font-weight: 800; font-size: 1.15rem; color: var(--ip-ink); letter-spacing: -0.02em; }
 .avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--ip-violet-400), var(--ip-violet-600)); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: .8rem; font-weight: 700; }
 body.landing .site-header { background: rgba(10, 15, 36, .78); border-bottom-color: rgba(255, 255, 255, .08); }

@@ -74,7 +74,7 @@ function createApp(options = {}) {
   app.use('/static', express.static(path.join(__dirname, 'public'), staticOpts));
   // Browser libraries are copied into public/vendor by `npm run vendor`.
   app.use('/vendor', express.static(path.join(__dirname, 'public', 'vendor'), staticOpts));
-  app.get('/favicon.ico', (req, res) => res.redirect(301, '/static/images/logo.svg'));
+  app.get('/favicon.ico', (req, res) => res.redirect(301, '/static/images/favicon.png'));
 
   app.get('/healthz', (req, res) => {
     const ok = isDatabaseReady();
