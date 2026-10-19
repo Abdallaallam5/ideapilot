@@ -9,6 +9,6 @@
 <% if (lang === 'ar') { %><link rel="stylesheet" href="/vendor/fonts/cairo/400.css">
 <link rel="stylesheet" href="/vendor/fonts/cairo/600.css">
 <link rel="stylesheet" href="/vendor/fonts/cairo/700.css">
-<% } %><link rel="stylesheet" href="/static/css/main.css">
+<% } %><link rel="stylesheet" href="<%= asset('/static/css/main.css') %>">
 <% pageStyles.forEach(function (href) { %><link rel="stylesheet" href="<%= href %>">
 <% }) %>

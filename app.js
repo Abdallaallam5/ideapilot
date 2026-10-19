@@ -20,6 +20,7 @@ const { flash } = require('./middleware/flash');
 const { loadCurrentUser } = require('./middleware/requireAuth');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const constants = require('./models/constants');
+const { asset } = require('./utils/assetVersion');
 
 /**
  * Builds the Express application. The database connection is owned by
@@ -101,6 +102,7 @@ function createApp(options = {}) {
     res.locals.fmt = format;
     res.locals.safeJson = safeJson;
     res.locals.escapeHtml = escapeHtml;
+    res.locals.asset = asset;
     res.locals.C = constants;
     res.locals.ai = aiConfig.publicInfo();
     res.locals.bodyClass = '';

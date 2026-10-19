@@ -2,7 +2,7 @@
 <html lang="<%= lang %>" dir="<%= dir %>">
 <head>
 <%- include('../partials/head') %>
-<link rel="stylesheet" href="/static/css/workspace.css">
+<link rel="stylesheet" href="<%= asset('/static/css/workspace.css') %>">
 </head>
 <body class="<%= bodyClass %>" data-project-id="<%= project._id %>">
   <a class="skip-link" href="#main"><%= __("Skip to content") %></a>

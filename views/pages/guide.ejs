@@ -25,9 +25,9 @@
     <div class="row g-4 align-items-start guide-player-row">
       <div class="col-lg-8">
         <div class="guide-player">
-          <video id="guideVideo" controls preload="metadata" playsinline poster="/static/videos/ideapilot-guide-poster.jpg" aria-label="<%= __('IdeaPilot walkthrough video with Arabic captions') %>">
-            <source src="/static/videos/ideapilot-guide-ar.mp4" type="video/mp4">
-            <%= __('Your browser cannot play this video.') %> <a href="/static/videos/ideapilot-guide-ar.mp4"><%= __('Download it') %></a>
+          <video id="guideVideo" controls preload="metadata" playsinline poster="<%= asset('/static/videos/ideapilot-guide-poster.jpg') %>" aria-label="<%= __('IdeaPilot walkthrough video with Arabic captions') %>">
+            <source src="<%= asset('/static/videos/ideapilot-guide-ar.mp4') %>" type="video/mp4">
+            <%= __('Your browser cannot play this video.') %> <a href="<%= asset('/static/videos/ideapilot-guide-ar.mp4') %>"><%= __('Download it') %></a>
           </video>
         </div>
       </div>
