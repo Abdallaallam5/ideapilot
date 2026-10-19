@@ -14,7 +14,7 @@
       <% if (aiStatus.enabled && allTasks.length) { %>
         <form action="/projects/<%= project._id %>/ai/tasks" method="post" data-ai-inline>
           <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
-          <button class="btn btn-copilot btn-sm" type="submit"><i data-lucide="sparkles" class="icon-sm"></i> <%= __('Improve with AI') %></button>
+          <button class="btn btn-copilot btn-sm" type="submit"><i data-lucide="sparkles" class="icon-sm"></i> <%= __('Improve with IdeaPilot') %></button>
         </form>
       <% } %>
       <a class="btn btn-primary btn-sm" href="/projects/<%= project._id %>/tasks/new"><i data-lucide="plus" class="icon-sm"></i> <%= __('New task') %></a>

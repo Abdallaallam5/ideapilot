@@ -16,9 +16,9 @@
           <a class="btn btn-outline-light btn-lg" href="/guide"><i data-lucide="circle-play" class="icon-sm"></i> <%= __('Watch the video guide') %></a>
         </div>
         <ul class="hero-points">
-          <li><i data-lucide="check" class="icon-xs"></i> <%= __('Works fully without AI') %></li>
+          <li><i data-lucide="check" class="icon-xs"></i> <%= __('Every tool also works by hand') %></li>
           <li><i data-lucide="check" class="icon-xs"></i> <%= __('Every plan change is versioned') %></li>
-          <li><i data-lucide="check" class="icon-xs"></i> <%= __('AI suggestions need your approval') %></li>
+          <li><i data-lucide="check" class="icon-xs"></i> <%= __('IdeaPilot suggestions need your approval') %></li>
         </ul>
       </div>
       <div class="col-lg-6">
@@ -62,7 +62,7 @@
         { icon: 'milestone', title: 'Roadmaps with phases', text: 'Organize work into phases and milestones, set priorities and optional deadlines, and see progress per phase.' },
         { icon: 'kanban', title: 'List and Kanban tasks', text: 'Manage tasks in a list or drag them across a board. Dependencies are validated, and blocked or overdue work is flagged.' },
         { icon: 'git-branch', title: 'Replanning and versions', text: 'When an assumption fails, IdeaPilot traces what it affects and proposes changes. Accepted changes become a new plan version you can always roll back.' },
-        { icon: 'sparkles', title: 'Optional AI copilot', text: 'Connect an AI provider to analyze ideas, suggest components and draft roadmaps. Suggestions arrive as proposals you approve or reject.' },
+        { icon: 'sparkles', title: 'IdeaPilot assistant', text: 'IdeaPilot analyzes your idea, suggests what is missing and drafts roadmaps. Suggestions arrive as proposals you approve or reject.' },
       ].forEach(function (f) { %>
         <div class="col-md-6 col-lg-4">
           <div class="feature-card"><span class="feature-icon"><i data-lucide="<%= f.icon %>"></i></span><h3 class="h5"><%= __(f.title) %></h3><p><%= __(f.text) %></p></div>
@@ -82,7 +82,7 @@
       <% [
         { n: 1, title: 'Describe your idea', text: 'Give it a title and a short description. Add the outcome you want, your audience, time, budget or constraints if you know them.' },
         { n: 2, title: 'Map it visually', text: 'Break the idea into components on an interactive map. Mark what you are assuming, what could go wrong, and what you already have.' },
-        { n: 3, title: 'Build the plan', text: 'Turn the map into phases, milestones and tasks, by hand or with an AI draft. Set priorities and link tasks to the parts of the map they serve.' },
+        { n: 3, title: 'Build the plan', text: 'Turn the map into phases, milestones and tasks, by hand or with a draft from IdeaPilot. Set priorities and link tasks to the parts of the map they serve.' },
         { n: 4, title: 'Execute and adapt', text: 'Move tasks forward, watch progress, and when something important changes, replan. Every version and decision stays in your history.' },
       ].forEach(function (s) { %>
         <div class="col-md-6 col-lg-3"><div class="step-card"><span class="step-num"><%= s.n %></span><h3 class="h6"><%= __(s.title) %></h3><p><%= __(s.text) %></p></div></div>
@@ -110,8 +110,8 @@
     <div class="accordion faq" id="faqAccordion">
       <% [
         { q: 'What kinds of ideas can I plan?', a: 'Anything with a goal: businesses, websites and apps, learning goals, research, creative projects, events, home projects. Node types such as goals, assumptions and risks apply to every domain.' },
-        { q: 'Do I need AI to use IdeaPilot?', a: 'No. Maps, analysis, roadmaps, tasks, replanning and version history all work by hand. The AI copilot is optional and only available when the server has an AI provider configured.' },
-        { q: 'Will the AI change my plan without asking?', a: 'Never. AI output is shown as a proposal. You choose which items to apply, and plan changes are saved as a new version so you can restore the previous one.' },
+        { q: 'Do I have to use the IdeaPilot assistant?', a: 'No. Maps, analysis, roadmaps, tasks, replanning and version history all work by hand. The IdeaPilot assistant is there when you want a head start.' },
+        { q: 'Will IdeaPilot change my plan without asking?', a: 'Never. IdeaPilot’s suggestions are shown as a proposal. You choose which items to apply, and plan changes are saved as a new version so you can restore the previous one.' },
         { q: 'What happens when an assumption turns out to be wrong?', a: 'Mark it as changed or invalidated from the map. IdeaPilot follows the connections on your map and the dependencies between tasks to show what is affected, then proposes changes you can accept or reject.' },
         { q: 'Is my data private?', a: 'Your projects are only visible to your account. Passwords are hashed with bcrypt, sessions are stored server-side, and every request is checked for project ownership.' },
       ].forEach(function (item, i) { %>

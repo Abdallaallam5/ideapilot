@@ -22,7 +22,7 @@ function handle(action) {
       return await action(req, res);
     } catch (err) {
       if (err.name !== 'AIError') throw err;
-      await activity.record(req.project._id, req.user._id, 'ai_failed', `AI request failed: ${err.message}`.slice(0, 500), { code: err.code });
+      await activity.record(req.project._id, req.user._id, 'ai_failed', `IdeaPilot request failed: ${err.message}`.slice(0, 500), { code: err.code });
       if (wantsJson(req)) return res.status(err.status || 502).json({ error: err.message, code: err.code });
       req.flash('danger', err.message);
       return res.redirect(req.get('referer') || `/projects/${req.project._id}/map`);
@@ -37,7 +37,7 @@ function status(req, res) {
 const analyze = handle(async (req, res) => {
   const { data, conversation } = await aiService.analyzeIdea(req.project, req.user);
   const proposal = await proposalService.create(req.project, req.user, {
-    kind: 'analysis', origin: 'ai', title: req.__('AI analysis of the idea'), summary: data.summary,
+    kind: 'analysis', origin: 'ai', title: req.__('IdeaPilot analysis of the idea'), summary: data.summary,
     payload: proposalService.analysisPayload(data), conversation,
   });
   return respond(req, res, proposal);
@@ -59,7 +59,7 @@ const roadmap = handle(async (req, res) => {
   const { data, conversation } = await aiService.generateRoadmap(req.project, req.user);
   const payload = proposalService.roadmapPayload(data);
   const proposal = await proposalService.create(req.project, req.user, {
-    kind: 'roadmap', origin: 'ai', title: req.__('AI roadmap: {title}', { title: data.title }).slice(0, 200), summary: data.rationale, payload, conversation,
+    kind: 'roadmap', origin: 'ai', title: req.__('IdeaPilot roadmap: {title}', { title: data.title }).slice(0, 200), summary: data.rationale, payload, conversation,
   });
   return respond(req, res, proposal);
 });
@@ -69,7 +69,7 @@ const tasks = handle(async (req, res) => {
   const ctxTasks = await require('../models/Task').find({ project: req.project._id }).lean();
   const payload = proposalService.taskImprovementPayload(data, taskIdByRef, ctxTasks);
   const proposal = await proposalService.create(req.project, req.user, {
-    kind: 'tasks', origin: 'ai', title: req.__('AI task improvements'), summary: data.summary, payload, conversation,
+    kind: 'tasks', origin: 'ai', title: req.__('IdeaPilot task improvements'), summary: data.summary, payload, conversation,
   });
   return respond(req, res, proposal);
 });

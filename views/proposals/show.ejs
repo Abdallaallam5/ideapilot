@@ -11,7 +11,7 @@
       <h1 class="d-flex align-items-center gap-2 flex-wrap"><%= __(proposal.title) %>
         <span class="status-badge <%= proposal.status === 'accepted' ? 'status-completed' : proposal.status === 'rejected' ? 'status-blocked' : 'status-in_progress' %>"><%= pending ? __('Waiting for review') : fmt.label(proposal.status) %></span>
       </h1>
-      <p><%= __(proposal.origin === 'ai' ? 'Suggested by the AI copilot' : 'Computed by IdeaPilot from your map and tasks') %> · <%= fmt.formatDateTime(proposal.createdAt) %></p>
+      <p><%= __(proposal.origin === 'ai' ? 'Suggested by the IdeaPilot assistant' : 'Computed by IdeaPilot from your map and tasks') %> · <%= fmt.formatDateTime(proposal.createdAt) %></p>
     </div>
   </div>
 
@@ -150,11 +150,11 @@
         <% p.newTasks.forEach(function (t, i) { %>
           <label class="proposal-item">
             <input class="form-check-input" type="checkbox" name="items" value="new:<%= i %>" <%= t.defaultSelected ? 'checked' : '' %> <%= dis %>>
-            <div class="small"><span class="prio prio-<%= t.priority %>"><%= fmt.label(t.priority) %></span> <span class="fw-semibold"><%= __(t.title) %></span> <span class="source-tag"><%= __(t.origin === 'ai' ? 'AI' : 'Rule') %></span><% if (t.description) { %><div><%= __(t.description) %></div><% } %><div class="text-muted fst-italic"><%= __(t.reason) %></div></div>
+            <div class="small"><span class="prio prio-<%= t.priority %>"><%= fmt.label(t.priority) %></span> <span class="fw-semibold"><%= __(t.title) %></span> <span class="source-tag"><%= __(t.origin === 'ai' ? 'IdeaPilot' : 'Rule') %></span><% if (t.description) { %><div><%= __(t.description) %></div><% } %><div class="text-muted fst-italic"><%= __(t.reason) %></div></div>
           </label>
         <% }) %>
-        <% if (p.ai && !p.ai.ok) { %><div class="alert alert-warning small mt-2 mb-0"><%= __('The AI request for extra alternatives failed, so only rule-based suggestions are shown:') %> <%= __(p.ai.message) %></div><% } %>
-        <% if (p.ai && p.ai.ok && p.ai.explanation) { %><div class="small text-muted mt-2"><strong><%= __('AI note:') %></strong> <%= p.ai.explanation %></div><% } %>
+        <% if (p.ai && !p.ai.ok) { %><div class="alert alert-warning small mt-2 mb-0"><%= __('IdeaPilot could not get extra alternatives this time, so only rule-based suggestions are shown:') %> <%= __(p.ai.message) %></div><% } %>
+        <% if (p.ai && p.ai.ok && p.ai.explanation) { %><div class="small text-muted mt-2"><strong><%= __('IdeaPilot note:') %></strong> <%= p.ai.explanation %></div><% } %>
       </div>
     <% } %>
   </form>

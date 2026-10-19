@@ -33,7 +33,7 @@ function createAILimiter(env) {
     standardHeaders: 'draft-8',
     legacyHeaders: false,
     keyGenerator: (req) => (req.user ? `user:${req.user._id}` : ipKeyGenerator(req.ip || '')),
-    handler: handler('You are sending AI requests too quickly. Please wait a minute.'),
+    handler: handler('You are sending requests to the IdeaPilot assistant too quickly. Please wait a minute.'),
   });
 }
 

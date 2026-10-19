@@ -11,7 +11,7 @@
       <% if (aiStatus.enabled) { %>
         <form action="/projects/<%= project._id %>/ai/roadmap" method="post" data-ai-inline>
           <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
-          <button class="btn btn-copilot btn-sm" type="submit"><i data-lucide="sparkles" class="icon-sm"></i> <%= __('Draft roadmap with AI') %></button>
+          <button class="btn btn-copilot btn-sm" type="submit"><i data-lucide="sparkles" class="icon-sm"></i> <%= __('Draft roadmap with IdeaPilot') %></button>
         </form>
       <% } %>
     </div>
@@ -45,7 +45,7 @@
     <div class="empty-state mb-3">
       <div class="empty-illustration" aria-hidden="true"><i data-lucide="milestone"></i></div>
       <h2 class="h5"><%= __('No phases yet') %></h2>
-      <p class="text-muted mx-auto"><%= __('Break your plan into phases, such as “Research”, “Build” and “Launch”, then add milestones and tasks to each one.') %><%= aiStatus.enabled ? ' ' + __('Or let the AI copilot draft a roadmap for you to review.') : '' %></p>
+      <p class="text-muted mx-auto"><%= __('Break your plan into phases, such as “Research”, “Build” and “Launch”, then add milestones and tasks to each one.') %><%= aiStatus.enabled ? ' ' + __('Or let the IdeaPilot assistant draft a roadmap for you to review.') : '' %></p>
     </div>
   <% } %>
 

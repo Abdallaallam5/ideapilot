@@ -41,7 +41,7 @@ describe('AI disabled', () => {
     expect(res.body.error).toContain('AI_API_KEY');
     expect(await Proposal.countDocuments()).toBe(0);
     const page = await ctx.agent.get(`/projects/${id}/map`);
-    expect(page.text).toContain('AI is not configured');
+    expect(page.text).toContain('The IdeaPilot assistant is not turned on');
     // Manual features still work.
     const node = await api(ctx, 'post', `/projects/${id}/graph/nodes`, { type: 'goal', title: 'Manual goal' });
     expect(node.status).toBe(201);
@@ -133,7 +133,7 @@ describe('AI provider errors', () => {
     const res = await ctx.agent.post(`/projects/${id}/ai/analyze`).type('form').set('Referer', `/projects/${id}/analysis`).send({ _csrf: ctx.csrf });
     expect(res.status).toBe(302);
     const page = await ctx.agent.get(`/projects/${id}/analysis`);
-    expect(page.text).toContain('The AI provider returned an error');
+    expect(page.text).toContain('The IdeaPilot assistant ran into an error');
   });
 
   test('per-user daily limit is enforced', async () => {

@@ -1,18 +1,18 @@
 <aside class="offcanvas offcanvas-end ai-panel" tabindex="-1" id="aiPanel" aria-labelledby="aiPanelTitle" data-ai-panel data-project-id="<%= project._id %>" data-ai-enabled="<%= aiStatus.enabled %>">
   <div class="offcanvas-header">
-    <h2 class="offcanvas-title fs-5 d-flex align-items-center gap-2" id="aiPanelTitle"><i data-lucide="sparkles"></i> <%= __('AI Copilot') %></h2>
+    <h2 class="offcanvas-title fs-5 d-flex align-items-center gap-2" id="aiPanelTitle"><i data-lucide="sparkles"></i> <%= __('IdeaPilot Assistant') %></h2>
     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="<%= __('Close') %>"></button>
   </div>
   <div class="offcanvas-body">
     <% if (!aiStatus.enabled) { %>
       <div class="ai-disabled">
         <i data-lucide="plug-zap" class="mb-2"></i>
-        <h3 class="fs-6"><%= __('AI is not configured') %></h3>
+        <h3 class="fs-6"><%= __('The IdeaPilot assistant is not turned on') %></h3>
         <p class="small mb-2"><%= __(aiStatus.reason) %></p>
-        <p class="small mb-0"><%= __('Everything else works without it: you can build maps, analyses, roadmaps and tasks by hand. To enable the copilot, the server administrator sets AI_PROVIDER, AI_API_KEY and optionally AI_MODEL in the environment and restarts the app.') %></p>
+        <p class="small mb-0"><%= __('Everything else works without it: you can build maps, analyses, roadmaps and tasks by hand. To turn on the assistant, the server administrator sets AI_PROVIDER, AI_API_KEY and optionally AI_MODEL in the environment and restarts the app.') %></p>
       </div>
     <% } else { %>
-      <p class="small ai-muted"><%= __('Using {provider} ({model}).', { provider: aiStatus.providerName, model: aiStatus.model }) %> <%= __('The copilot only proposes changes. You review and approve them before anything in your project changes.') %></p>
+      <p class="small ai-muted"><%= __('The assistant only proposes changes. You review and approve them before anything in your project changes.') %></p>
       <div class="ai-actions">
         <% const actions = [
           { url: 'analyze', label: 'Analyze this idea', icon: 'scan-search', hint: 'Summary, goals, assumptions, risks' },
@@ -35,7 +35,7 @@
         <% }) %>
       </div>
       <hr>
-      <h3 class="fs-6"><%= __('Ask the copilot') %></h3>
+      <h3 class="fs-6"><%= __('Ask IdeaPilot') %></h3>
       <div class="ai-chat" data-ai-chat>
         <div class="ai-messages" data-ai-messages aria-live="polite"></div>
         <form class="ai-chat-form" data-ai-chat-form>

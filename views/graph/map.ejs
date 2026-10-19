@@ -121,7 +121,7 @@
         <label class="form-label" for="replanNote"><%= __('What happened?') %> <span class="optional"><%= __('optional') %></span></label>
         <textarea id="replanNote" class="form-control mb-2" name="note" rows="2" maxlength="1000"></textarea>
         <% if (aiStatus.enabled) { %>
-          <div class="form-check mb-2"><input class="form-check-input" type="checkbox" name="useAI" id="replanAI" value="true"><label class="form-check-label" for="replanAI"><%= __('Also ask the AI for alternative actions') %></label></div>
+          <div class="form-check mb-2"><input class="form-check-input" type="checkbox" name="useAI" id="replanAI" value="true"><label class="form-check-label" for="replanAI"><%= __('Also ask IdeaPilot for alternative actions') %></label></div>
         <% } %>
         <button class="btn btn-warning btn-sm w-100" type="submit"><i data-lucide="route" class="icon-sm"></i> <%= __('Analyze impact and propose a replan') %></button>
       </div>

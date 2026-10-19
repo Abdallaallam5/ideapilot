@@ -17,7 +17,7 @@ const { NODE_TYPES } = require('../models/constants');
 async function create(project, user, { kind, origin, title, summary, payload, conversation }) {
   const proposal = await Proposal.create({ project: project._id, kind, origin, title, summary, payload, createdBy: user._id });
   if (conversation?._id) await AIConversation.updateOne({ _id: conversation._id }, { $set: { proposal: proposal._id } });
-  await activity.record(project._id, user._id, 'proposal_created', `${origin === 'ai' ? 'AI proposed' : 'Proposed'}: ${title}`, { proposalId: proposal._id, kind });
+  await activity.record(project._id, user._id, 'proposal_created', `${origin === 'ai' ? 'IdeaPilot proposed' : 'Proposed'}: ${title}`, { proposalId: proposal._id, kind });
   return proposal;
 }
 
@@ -207,7 +207,7 @@ const APPLY = {
     }));
     const next = await planService.createVersion(project, user, {
       source: 'ai',
-      changeSummary: `${replace ? 'Replaced the plan with' : 'Added'} an AI roadmap (${newPhases.length} phase(s)).`,
+      changeSummary: `${replace ? 'Replaced the plan with' : 'Added'} an IdeaPilot roadmap (${newPhases.length} phase(s)).`,
       title: replace ? payload.title : current.title,
       objective: replace ? payload.objective : current.objective,
       phases: replace ? newPhases : [...planService.clonePhases(current.phases), ...newPhases],
@@ -236,7 +236,7 @@ const APPLY = {
     const imps = improvements.map((x, i) => ({ ...x, i })).filter((x) => selected(selection, 'improve', x.i));
     const adds = missingTasks.map((x, i) => ({ ...x, i })).filter((x) => selected(selection, 'add', x.i));
     if (!imps.length && !adds.length) throw unprocessable('Select at least one suggestion to apply.');
-    const next = await planService.createVersion(project, user, { source: 'ai', changeSummary: `Applied ${imps.length} AI task improvement(s) and ${adds.length} new task(s).` });
+    const next = await planService.createVersion(project, user, { source: 'ai', changeSummary: `Applied ${imps.length} IdeaPilot task improvement(s) and ${adds.length} new task(s).` });
     let updated = 0;
     for (const imp of imps) {
       const res = await Task.updateOne({ _id: imp.taskId, project: project._id }, { $set: imp.changes });

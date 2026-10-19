@@ -2,15 +2,15 @@
 <%
   const chapters = [
     { t: 0, icon: 'languages', title: 'Switch to Arabic and tour the home page' },
-    { t: 16, icon: 'user-plus', title: 'Create an account' },
+    { t: 17, icon: 'user-plus', title: 'Create an account' },
     { t: 28, icon: 'lightbulb', title: 'Add a new idea' },
     { t: 37, icon: 'network', title: 'Build the idea map' },
     { t: 79, icon: 'scan-search', title: 'Analyze the idea' },
-    { t: 93, icon: 'milestone', title: 'Plan phases, milestones and tasks' },
-    { t: 118, icon: 'kanban', title: 'Track tasks in a list and on the board' },
-    { t: 139, icon: 'refresh-cw', title: 'Replan when an assumption changes' },
-    { t: 159, icon: 'history', title: 'History and plan versions' },
-    { t: 164, icon: 'sparkles', title: 'Ask the AI copilot' },
+    { t: 92, icon: 'milestone', title: 'Plan phases, milestones and tasks' },
+    { t: 117, icon: 'kanban', title: 'Track tasks in a list and on the board' },
+    { t: 138, icon: 'refresh-cw', title: 'Replan when an assumption changes' },
+    { t: 158, icon: 'history', title: 'History and plan versions' },
+    { t: 163, icon: 'sparkles', title: 'Ask the IdeaPilot assistant' },
   ];
   const clock = (s) => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
 %>
@@ -64,7 +64,7 @@
         { icon: 'milestone', title: 'Turn it into a plan', text: 'Create phases, milestones and tasks with priorities, deadlines and tasks that must finish first.' },
         { icon: 'kanban', title: 'Get it done', text: 'Change a task’s status from the list or drag its card across the board.' },
         { icon: 'refresh-cw', title: 'Adapt when things change', text: 'Mark an assumption as wrong and review a proposed new plan before anything changes.' },
-        { icon: 'sparkles', title: 'Ask for help', text: 'The AI copilot answers in your language and only suggests. You approve every change.' },
+        { icon: 'sparkles', title: 'Ask for help', text: 'The IdeaPilot assistant answers in your language and only suggests. You approve every change.' },
       ].forEach(function (f) { %>
         <div class="col-md-6 col-lg-4">
           <div class="feature-card h-100">
@@ -78,7 +78,7 @@
     <div class="guide-cta">
       <div>
         <h2 class="h4 mb-1"><%= __('Ready to try it with your own idea?') %></h2>
-        <p class="mb-0"><%= __('It takes a minute to start, and it works fully without AI.') %></p>
+        <p class="mb-0"><%= __('It takes a minute to start, and every tool also works by hand.') %></p>
       </div>
       <% if (currentUser) { %>
         <a class="btn btn-primary btn-lg" href="/projects/new"><i data-lucide="plus" class="icon-sm"></i> <%= __('Create an idea') %></a>
