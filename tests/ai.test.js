@@ -275,6 +275,17 @@ describe('provider errors and limits', () => {
     expect(res.status).toBe(404);
   });
 
+  test('opening the form URLs directly goes back to the form instead of a 404', async () => {
+    const ctx = await registerUser();
+    const id = await createProject(ctx);
+    const idea = await ctx.agent.get('/projects/from-text');
+    expect(idea.status).toBe(302);
+    expect(idea.headers.location).toBe('/projects/new');
+    const tasks = await ctx.agent.get(`/projects/${id}/tasks/from-text`);
+    expect(tasks.status).toBe(302);
+    expect(tasks.headers.location).toBe(`/projects/${id}/tasks`);
+  });
+
   test('schemas convert to provider JSON schema without unsupported keywords', () => {
     const json = toProviderSchema(schemas.ideaOutput);
     expect(json.type).toBe('object');

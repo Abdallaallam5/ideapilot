@@ -72,7 +72,7 @@ function systemPrompt() {
 function mapProviderError(err) {
   const msg = String(err?.message || '');
   const statusCode = err?.status || err?.code;
-  if (err?.name === 'AbortError' || /aborted|timeout|timed out/i.test(msg)) {
+  if (err?.name === 'AbortError' || statusCode === 504 || /aborted|timeout|timed out|deadline/i.test(msg)) {
     return new AIError('TIMEOUT', 'The IdeaPilot assistant did not respond in time. Nothing was changed; please try again.', 504);
   }
   if (statusCode === 401 || statusCode === 403 || /api key|permission|unauthori[sz]ed/i.test(msg)) {

@@ -12,6 +12,9 @@ const owner = [requireAuth, requireProjectOwner];
 
 router.get('/projects', requireAuth, (req, res) => res.redirect('/dashboard'));
 router.get('/projects/new', requireAuth, projects.newForm);
+// The write-your-idea/tasks forms post here; a refresh, back button or post-login return lands on GET.
+router.get('/projects/from-text', requireAuth, (req, res) => res.redirect('/projects/new'));
+router.get('/projects/:projectId/tasks/from-text', owner, (req, res) => res.redirect(`/projects/${req.params.projectId}/tasks`));
 router.post('/projects', requireAuth, validateRequest(createProjectSchema, { onError: projects.renderCreateErrors }), projects.create);
 
 router.get('/projects/:projectId', owner, projects.open);
