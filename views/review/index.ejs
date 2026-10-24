@@ -1,0 +1,121 @@
+<div class="ws-page review-page">
+  <div class="ws-page-head">
+    <div>
+      <h1><%= __('Review') %></h1>
+      <p><%= __('Your idea and your tasks on one page: what you have, what comes next, and what needs your attention.') %></p>
+    </div>
+  </div>
+
+  <% if (pending.length) { %>
+    <div class="alert alert-info d-flex flex-wrap align-items-center gap-2">
+      <i data-lucide="inbox" class="icon-sm"></i>
+      <strong><%= __('{n} proposal(s) waiting for your review:', { n: pending.length }) %></strong>
+      <% pending.forEach(function (p) { %><a class="btn btn-sm btn-light" href="/projects/<%= project._id %>/proposals/<%= p._id %>"><%= __(p.title) %></a><% }) %>
+    </div>
+  <% } %>
+
+  <section class="panel panel-body mb-3 review-idea">
+    <div class="d-flex align-items-start gap-3">
+      <span class="review-icon" aria-hidden="true"><i data-lucide="lightbulb"></i></span>
+      <div class="flex-grow-1" style="min-width: 0">
+        <h2 class="h5 mb-1"><%= project.title %></h2>
+        <p class="text-muted mb-0"><%= project.description || __('No description yet.') %></p>
+      </div>
+      <a class="btn btn-light btn-sm flex-shrink-0" href="/projects/<%= project._id %>/map"><i data-lucide="network" class="icon-sm"></i> <%= __('Open map') %></a>
+    </div>
+  </section>
+
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-lg-3"><div class="stat-card"><i data-lucide="check-circle-2"></i><div><div class="stat-value"><%= counts.done %>/<%= progress.total %></div><div class="stat-label"><%= __('Tasks done') %></div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card"><i data-lucide="loader"></i><div><div class="stat-value"><%= counts.doing %></div><div class="stat-label"><%= __('In progress') %></div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card"><i data-lucide="hourglass"></i><div><div class="stat-value"><%= counts.waiting %></div><div class="stat-label"><%= __('Waiting or blocked') %></div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card <%= counts.overdue ? 'danger' : '' %>"><i data-lucide="alarm-clock"></i><div><div class="stat-value"><%= counts.overdue %></div><div class="stat-label"><%= __('Overdue') %></div></div></div></div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-xl-7">
+      <section class="panel mb-3" aria-labelledby="checks-title">
+        <div class="panel-head"><h2 id="checks-title"><i data-lucide="clipboard-check" class="icon-sm"></i> <%= __('Things to check') %></h2></div>
+        <div class="panel-body">
+          <% if (!checks.length) { %>
+            <p class="mb-0 text-success d-flex align-items-center gap-2"><i data-lucide="party-popper" class="icon-sm"></i> <%= __('Everything looks on track. Nice work.') %></p>
+          <% } %>
+          <ul class="review-checks">
+            <% checks.forEach(function (c) { %><li class="tone-<%= c.tone %>"><i data-lucide="<%= c.icon %>" class="icon-sm"></i><span><%= c.text %></span></li><% }) %>
+          </ul>
+        </div>
+      </section>
+
+      <section class="panel mb-3" aria-labelledby="next-title">
+        <div class="panel-head">
+          <h2 id="next-title"><i data-lucide="footprints" class="icon-sm"></i> <%= __('Next up') %></h2>
+          <a class="small" href="/projects/<%= project._id %>/tasks"><%= __('All tasks') %></a>
+        </div>
+        <div class="panel-body">
+          <% if (!nextUp.length) { %><p class="text-muted small mb-0"><%= progress.total ? __('No open tasks right now.') : __('No tasks yet. Write what you need to do on the Tasks page.') %></p><% } %>
+          <ol class="review-next">
+            <% nextUp.forEach(function (t) { %>
+              <li>
+                <a href="/projects/<%= project._id %>/tasks/<%= t._id %>/edit" class="fw-semibold"><%= t.title %></a>
+                <span class="prio prio-<%= t.priority %>"><%= fmt.label(t.priority) %></span>
+                <% if (t.status === 'in_progress') { %><span class="status-badge status-in_progress"><%= fmt.label(t.status) %></span><% } %>
+                <% if (t.deadline) { %><span class="small text-muted"><i data-lucide="calendar" class="icon-xs"></i> <%= fmt.formatDate(t.deadline) %></span><% } %>
+              </li>
+            <% }) %>
+          </ol>
+        </div>
+      </section>
+
+      <section class="panel mb-3" aria-labelledby="phases-title">
+        <div class="panel-head">
+          <h2 id="phases-title"><i data-lucide="milestone" class="icon-sm"></i> <%= __('Roadmap') %></h2>
+          <a class="small" href="/projects/<%= project._id %>/roadmap"><%= __('Open roadmap') %></a>
+        </div>
+        <div class="panel-body">
+          <div class="d-flex justify-content-between small fw-semibold mb-1"><span><%= __('Overall progress') %></span><span><%= progress.percent %>%</span></div>
+          <div class="progress mb-3" style="height: 8px" role="progressbar" aria-label="<%= __('Overall progress') %>" aria-valuenow="<%= progress.percent %>" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: <%= progress.percent %>%"></div></div>
+          <% if (!phases.length) { %><p class="text-muted small mb-0"><%= __('No phases yet.') %></p><% } %>
+          <% phases.forEach(function (row, i) { %>
+            <div class="review-phase">
+              <span class="phase-index"><%= i + 1 %></span>
+              <div class="flex-grow-1" style="min-width: 0">
+                <div class="d-flex justify-content-between small"><span class="fw-semibold text-truncate"><%= row.phase.title %></span><span class="text-muted"><%= row.progress.completed %>/<%= row.progress.total %></span></div>
+                <div class="progress" style="height: 5px"><div class="progress-bar" style="width: <%= row.progress.percent %>%"></div></div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </section>
+    </div>
+
+    <div class="col-xl-5">
+      <section class="panel mb-3" aria-labelledby="idea-title">
+        <div class="panel-head"><h2 id="idea-title"><i data-lucide="lightbulb" class="icon-sm"></i> <%= __('Your idea at a glance') %></h2><span class="small text-muted"><%= __('{n} item(s) on the map', { n: nodeCount }) %></span></div>
+        <div class="panel-body">
+          <% groups.forEach(function (g) { %>
+            <div class="review-group">
+              <div class="d-flex align-items-center gap-2 mb-1"><span class="type-badge" data-type-badge="<%= g.type %>"><%= __(g.label) %></span><span class="small text-muted"><%= g.items.length %></span></div>
+              <% if (g.items.length) { %>
+                <ul class="review-list"><% g.items.slice(0, 6).forEach(function (n) { %><li><%= n.title %></li><% }) %><% if (g.items.length > 6) { %><li class="text-muted"><%= __('and {n} more', { n: g.items.length - 6 }) %></li><% } %></ul>
+              <% } else { %><p class="small text-muted mb-0"><%= __('None yet.') %></p><% } %>
+            </div>
+          <% }) %>
+        </div>
+      </section>
+
+      <details class="panel mb-3 review-versions">
+        <summary class="panel-head"><h2><i data-lucide="git-branch" class="icon-sm"></i> <%= __('Earlier versions ({n})', { n: versions.length }) %></h2></summary>
+        <div class="panel-body pt-0">
+          <p class="small text-muted"><%= __('Every time you apply a suggestion, your plan is saved first. Open or restore an earlier version here.') %></p>
+          <% versions.forEach(function (v) { %>
+            <div class="d-flex align-items-center gap-2 py-1 small">
+              <span class="version-num">v<%= v.version %></span>
+              <span class="flex-grow-1 text-truncate"><%= __(v.changeSummary) %></span>
+              <% if (v.status === 'current') { %><span class="badge text-bg-primary"><%= __('Current') %></span><% } else { %><a href="/projects/<%= project._id %>/plan/versions/<%= v._id %>"><%= __('View') %></a><% } %>
+            </div>
+          <% }) %>
+        </div>
+      </details>
+    </div>
+  </div>
+</div>

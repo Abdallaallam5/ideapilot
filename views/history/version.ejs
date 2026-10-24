@@ -1,5 +1,5 @@
 <div class="ws-page">
-  <a class="back-link" href="/projects/<%= project._id %>/history"><i data-lucide="arrow-left" class="icon-sm"></i> <%= __('History') %></a>
+  <a class="back-link" href="/projects/<%= project._id %>/review"><i data-lucide="arrow-left" class="icon-sm"></i> <%= __('Review') %></a>
   <div class="ws-page-head mt-2">
     <div>
       <h1><%= __('Version {v}', { v: plan.version }) %>: <%= __(plan.title) %> <% if (plan.status === 'current') { %><span class="badge text-bg-primary align-middle"><%= __('Current') %></span><% } else { %><span class="badge text-bg-secondary align-middle"><%= __('Archived, read only') %></span><% } %></h1>
@@ -8,7 +8,7 @@
     <% if (plan.status !== 'current') { %>
       <div>
         <form id="restoreThis" action="/projects/<%= project._id %>/plan/versions/<%= plan._id %>/restore" method="post"><input type="hidden" name="_csrf" value="<%= csrfToken() %>"></form>
-        <button class="btn btn-primary btn-sm" type="button" data-confirm="<%= __('Restore version {v}? Your current plan is saved in history first.', { v: plan.version }) %>" data-confirm-label="<%= __('Restore') %>" data-confirm-tone="primary" data-confirm-form="#restoreThis"><i data-lucide="rotate-ccw" class="icon-sm"></i> <%= __('Restore this version') %></button>
+        <button class="btn btn-primary btn-sm" type="button" data-confirm="<%= __('Restore version {v}? Your current plan is saved as an earlier version first.', { v: plan.version }) %>" data-confirm-label="<%= __('Restore') %>" data-confirm-tone="primary" data-confirm-form="#restoreThis"><i data-lucide="rotate-ccw" class="icon-sm"></i> <%= __('Restore this version') %></button>
       </div>
     <% } else { %>
       <a class="btn btn-light btn-sm" href="/projects/<%= project._id %>/roadmap"><%= __('Open the roadmap') %></a>

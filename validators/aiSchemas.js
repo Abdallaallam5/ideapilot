@@ -26,6 +26,16 @@ const ideaOutput = z.object({
     relationship: z.enum(RELATIONSHIP_TYPES),
     description: z.string().trim().max(300),
   })).max(40),
+  // A starter roadmap: ordered phases, each with checkpoints and first tasks.
+  phases: z.array(z.object({
+    title: str(140),
+    description: z.string().trim().max(600),
+    milestones: z.array(str(140)).max(4),
+    tasks: z.array(z.object({
+      title: str(200),
+      priority: z.enum(PRIORITIES),
+    })).max(5),
+  })).max(6).default([]),
 });
 
 /** Free-text to-dos turned into structured tasks. */

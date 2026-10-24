@@ -167,7 +167,7 @@
       <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
       <div class="modal-header"><h2 class="modal-title fs-5" id="versionModalTitle"><%= __('Save plan as a new version') %></h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<%= __('Close') %>"></button></div>
       <div class="modal-body">
-        <p class="small text-muted"><%= __('The current plan (version {v}) and all of its tasks are frozen in History, where you can view or restore them later. You keep editing version {next}.', { v: plan.version, next: plan.version + 1 }) %></p>
+        <p class="small text-muted"><%= __('The current plan (version {v}) and all of its tasks are saved under earlier versions on the Review page, where you can view or restore them later. You keep editing version {next}.', { v: plan.version, next: plan.version + 1 }) %></p>
         <label class="form-label" for="changeSummary"><%= __('What changed, or why are you saving?') %></label>
         <textarea class="form-control" id="changeSummary" name="changeSummary" rows="3" maxlength="2000" required placeholder="<%= __('e.g. Agreed scope with the team before starting Phase 2') %>"></textarea>
       </div>

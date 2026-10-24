@@ -54,7 +54,12 @@ function graphPayload(data, nodeIdByRef, titleByRef = new Map()) {
     if (!s || !t || (s.kind === t.kind && s.ref === t.ref)) { dropped++; continue; }
     edges.push({ source: s, target: t, relationship: e.relationship, description: e.description || '' });
   }
-  return { rationale: data.rationale, nodes, edges, droppedEdges: dropped };
+  const phases = (data.phases || []).map((ph) => ({
+    title: ph.title, description: ph.description || '',
+    milestones: (ph.milestones || []).slice(0, 4),
+    tasks: (ph.tasks || []).slice(0, 5).map((t) => ({ title: t.title, priority: t.priority })),
+  }));
+  return { rationale: data.rationale, nodes, edges, droppedEdges: dropped, phases };
 }
 
 /** Removes unknown, self and circular dependencies (by task key) in place; returns how many were dropped. */
@@ -163,6 +168,29 @@ function layoutNewNodes(existing, nodes) {
   return nodes.map((n, idx) => ({ x: Math.round(cx + ((idx % perRow) - (perRow - 1) / 2) * 240), y: Math.round(maxY + 190 + Math.floor(idx / perRow) * 160) }));
 }
 
+/** Appends the starter roadmap from a written idea to the plan as a new version, with its first tasks. */
+async function addStarterRoadmap(project, user, phases) {
+  const current = await planService.getCurrentPlan(project);
+  const startOrder = current.phases.reduce((m, p) => Math.max(m, p.order), -1) + 1;
+  const newPhases = phases.map((p, idx) => ({
+    _id: new mongoose.Types.ObjectId(),
+    title: p.title, description: p.description, order: startOrder + idx,
+    milestones: p.milestones.map((title) => ({ _id: new mongoose.Types.ObjectId(), title })),
+  }));
+  const next = await planService.createVersion(project, user, {
+    source: 'ai',
+    changeSummary: `Added an IdeaPilot roadmap (${newPhases.length} phase(s)).`,
+    objective: current.objective || project.description,
+    phases: [...planService.clonePhases(current.phases), ...newPhases],
+  });
+  const docs = [];
+  phases.forEach((p, idx) => p.tasks.forEach((t, order) => docs.push({
+    project: project._id, plan: next._id, phaseId: newPhases[idx]._id, title: t.title, priority: t.priority, order, status: 'todo',
+  })));
+  if (docs.length) await Task.insertMany(docs);
+  return { summary: `Created a roadmap with ${newPhases.length} phase(s) and ${docs.length} task(s).`, planVersion: next.version };
+}
+
 const APPLY = {
   async analysis(project, proposal, user, { selection }) {
     const a = proposal.payload.analysis;
@@ -178,7 +206,8 @@ const APPLY = {
     const { nodes, edges } = proposal.payload;
     const chosen = nodes.map((n, i) => ({ ...n, i })).filter((n) => selected(selection, 'node', n.i));
     const chosenEdges = edges.map((e, i) => ({ ...e, i })).filter((e) => selected(selection, 'edge', e.i));
-    if (!chosen.length && !chosenEdges.length) throw unprocessable('Select at least one node or connection to add.');
+    const chosenPhases = (proposal.payload.phases || []).map((ph, i) => ({ ...ph, i })).filter((ph) => selected(selection, 'phase', ph.i));
+    if (!chosen.length && !chosenEdges.length && !chosenPhases.length) throw unprocessable('Select at least one node or connection to add.');
 
     const existing = await IdeaNode.find({ project: project._id }).select('position').lean();
     const positions = layoutNewNodes(existing, chosen);
@@ -201,7 +230,14 @@ const APPLY = {
       await IdeaEdge.create({ project: project._id, source, target, relationship: e.relationship, description: e.description });
       added++;
     }
-    return { summary: `Added ${chosen.length} node(s) and ${added} connection(s) to the map.` };
+    const result = { summary: `Added ${chosen.length} node(s) and ${added} connection(s) to the map.` };
+    if (chosenPhases.length) {
+      const roadmap = await addStarterRoadmap(project, user, chosenPhases);
+      result.summary += ` ${roadmap.summary}`;
+      result.planVersion = roadmap.planVersion;
+    }
+    await projectService.syncAnalysisFromMap(project, user);
+    return result;
   },
 
   async roadmap(project, proposal, user, { selection, mode }) {

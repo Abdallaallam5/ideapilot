@@ -169,13 +169,18 @@ describe('replanning', () => {
     expect(await Plan.countDocuments({ project: id })).toBe(1);
   });
 
-  test('history page shows real versions, decisions and activity', async () => {
+  test('review page sums up the idea and tasks and points out what needs attention', async () => {
     const { ctx, id } = await setup();
-    await ctx.agent.post(`/projects/${id}/decisions`).type('form').send({ _csrf: ctx.csrf, title: 'Start with 10 beds', rationale: 'Budget is small' });
-    const page = await ctx.agent.get(`/projects/${id}/history`);
+    await api(ctx, 'post', `/projects/${id}/graph/nodes`, { type: 'risk', title: 'Water access' });
+    await api(ctx, 'post', `/projects/${id}/graph/nodes`, { type: 'person', title: 'Neighbour Ali' });
+    const old = await ctx.agent.get(`/projects/${id}/history`);
+    expect(old.status).toBe(302);
+    expect(old.headers.location).toBe(`/projects/${id}/review`);
+    const page = await ctx.agent.get(`/projects/${id}/review`);
     expect(page.status).toBe(200);
-    expect(page.text).toContain('Start with 10 beds');
-    expect(page.text).toContain('Created idea');
+    expect(page.text).toContain('Neighbour Ali');
+    expect(page.text).toContain('have no task or plan to deal with them: Water access');
+    expect(page.text).toContain('Next up');
     expect(page.text).toContain('v1');
   });
 });

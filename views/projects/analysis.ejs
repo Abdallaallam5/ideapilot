@@ -14,13 +14,9 @@
   <div class="ws-page-head">
     <div>
       <h1><%= __('Analysis') %></h1>
-      <p><%= a.updatedAt ? __('Last updated {when}.', { when: fmt.timeAgo(a.updatedAt) }) : __('Not filled in yet. Write it yourself or pull items from your map.') %></p>
+      <p><%= a.updatedAt ? __('Last updated {when}.', { when: fmt.timeAgo(a.updatedAt) }) : __('Goals, assumptions, risks and resources you add to the map appear here automatically. You can also write it yourself.') %></p>
     </div>
     <div class="d-flex flex-wrap gap-2">
-      <form action="/projects/<%= project._id %>/analysis/sync-map" method="post">
-        <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
-        <button class="btn btn-outline-primary btn-sm" type="submit" title="<%= __('Add goals, assumptions, risks and resources from the map') %>"><i data-lucide="network" class="icon-sm"></i> <%= __('Pull from map') %></button>
-      </form>
       <% if (!editing) { %><a class="btn btn-primary btn-sm" href="/projects/<%= project._id %>/analysis?edit=1"><i data-lucide="pencil" class="icon-sm"></i> <%= __('Edit analysis') %></a><% } %>
     </div>
   </div>

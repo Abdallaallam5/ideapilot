@@ -85,6 +85,34 @@ describe('write your idea', () => {
     expect(spots.size).toBe(nodes.length);
   });
 
+  test('the idea comes with a ready-made roadmap and fills the analysis on accept', async () => {
+    aiService.setConfigForTests(ENABLED);
+    aiService.setProviderForTests(reply({ ...IDEA_REPLY, phases: [
+      { title: 'Prepare', description: 'Get ready to sell.', milestones: ['Permit approved'], tasks: [{ title: 'Apply for the food permit', priority: 'high' }, { title: 'Test recipes', priority: 'medium' }] },
+      { title: 'Launch', description: '', milestones: ['First 10 orders'], tasks: [{ title: 'Open the Instagram page', priority: 'medium' }] },
+      { title: 'Skipped phase', description: '', milestones: [], tasks: [{ title: 'Should not appear', priority: 'low' }] },
+    ] }));
+    const ctx = await registerUser();
+    const res = await postForm(ctx, '/projects/from-text', { text: IDEA_TEXT });
+    const page = await ctx.agent.get(res.headers.location);
+    expect(page.text).toContain('Ready-made roadmap');
+    expect(page.text).toContain('Apply for the food permit');
+
+    const accept = await postForm(ctx, `${res.headers.location}/accept`, { items: ['node:0', 'node:2', 'phase:0', 'phase:1'] });
+    expect(accept.status).toBe(302);
+    const project = await Project.findOne().lean();
+    const plan = await Plan.findOne({ project: project._id, status: 'current' }).lean();
+    expect(plan.phases.map((p) => p.title)).toEqual(['Prepare', 'Launch']);
+    expect(plan.phases[0].milestones.map((m) => m.title)).toEqual(['Permit approved']);
+    const tasks = await Task.find({ project: project._id }).sort({ order: 1 }).lean();
+    expect(tasks.map((t) => t.title).sort()).toEqual(['Apply for the food permit', 'Open the Instagram page', 'Test recipes']);
+    expect(tasks.every((t) => String(t.plan) === String(plan._id))).toBe(true);
+    // The analysis is filled from the approved map items without any button.
+    expect(project.analysis.goals).toEqual(['Sell 50 boxes a week']);
+    expect(project.analysis.risks).toEqual(['Food permit']);
+    expect(project.analysis.summary).toBe('A small home bakery run by two sisters.');
+  });
+
   test('when IdeaPilot fails, nothing is created and the text is kept with a way to continue', async () => {
     aiService.setConfigForTests(ENABLED);
     aiService.setProviderForTests({ generate: async () => { const e = new Error('Request contains an invalid argument.'); e.status = 400; throw e; } });

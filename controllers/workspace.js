@@ -9,7 +9,7 @@ const TABS = [
   { key: 'analysis', label: 'Analysis', icon: 'scan-search' },
   { key: 'roadmap', label: 'Roadmap', icon: 'milestone' },
   { key: 'tasks', label: 'Tasks', icon: 'list-checks' },
-  { key: 'history', label: 'History', icon: 'history' },
+  { key: 'review', label: 'Review', icon: 'clipboard-check' },
 ];
 
 /** Shared locals for every workspace tab (header, tabs, progress, AI status). */

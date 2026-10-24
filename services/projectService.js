@@ -173,11 +173,16 @@ const NODE_TYPE_TO_SECTION = {
   milestone: 'coreComponents',
 };
 
-/** Deterministically merges map nodes into analysis lists (no duplicates). */
+/**
+ * Copies goals, assumptions, risks and resources from the map into the analysis lists.
+ * Runs automatically; each node is copied once, so items the user removes stay removed.
+ */
 async function syncAnalysisFromMap(project, user) {
-  const nodes = await IdeaNode.find({ project: project._id, type: { $in: Object.keys(NODE_TYPE_TO_SECTION) } }).lean();
+  const synced = new Set((project.analysis.mapSynced || []).map(String));
+  const nodes = await IdeaNode.find({ project: project._id, type: { $in: Object.keys(NODE_TYPE_TO_SECTION) } }).sort({ createdAt: 1 }).lean();
+  const fresh = nodes.filter((n) => !synced.has(String(n._id)));
   let added = 0;
-  for (const node of nodes) {
+  for (const node of fresh) {
     const section = NODE_TYPE_TO_SECTION[node.type];
     const list = project.analysis[section] || [];
     const exists = list.some((item) => item.toLowerCase().startsWith(node.title.toLowerCase()));
@@ -187,12 +192,15 @@ async function syncAnalysisFromMap(project, user) {
       added++;
     }
   }
-  if (added) {
-    project.analysis.updatedAt = new Date();
-    project.markModified('analysis');
-    await project.save();
-    await activity.record(project._id, user._id, 'analysis_updated', `Added ${added} item(s) to the analysis from the map`);
+  if (!project.analysis.summary && !project.analysis.updatedAt && project.description) {
+    project.analysis.summary = project.description;
+    added++;
   }
+  if (!fresh.length && !added) return 0;
+  project.analysis.mapSynced = [...(project.analysis.mapSynced || []), ...fresh.map((n) => n._id)];
+  if (added) project.analysis.updatedAt = new Date();
+  project.markModified('analysis');
+  await project.save();
   return added;
 }
 

@@ -30,6 +30,8 @@ const projectSchema = new mongoose.Schema(
       opportunities: listField,
       nextSteps: listField,
       updatedAt: Date,
+      // Map nodes already copied into the lists, so items the user deletes are not re-added.
+      mapSynced: { type: [mongoose.Schema.Types.ObjectId], default: [] },
     },
   },
   { timestamps: true }

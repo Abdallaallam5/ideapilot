@@ -83,7 +83,7 @@ async function deleteMilestone(req, res) {
 async function saveVersion(req, res) {
   const plan = await planService.createVersion(req.project, req.user, { source: 'manual', changeSummary: req.validated.changeSummary });
   req.flash('success', `Saved. You are now editing plan version ${plan.version}; version ${plan.version - 1} is kept in History.`);
-  res.redirect(req.body.returnTo === 'history' ? `/projects/${req.project._id}/history` : back(req));
+  res.redirect(req.body.returnTo === 'review' ? `/projects/${req.project._id}/review` : back(req));
 }
 
 module.exports = { roadmap, updateMeta, addPhase, updatePhase, deletePhase, movePhase, reorderPhases, addMilestone, updateMilestone, deleteMilestone, saveVersion };

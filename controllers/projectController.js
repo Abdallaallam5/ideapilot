@@ -36,6 +36,7 @@ async function map(req, res) {
 }
 
 async function analysis(req, res) {
+  await projectService.syncAnalysisFromMap(req.project, req.user);
   const locals = await workspaceLocals(req, 'analysis');
   res.render('projects/analysis', { ...locals, title: `${req.project.title} · Analysis`, editing: req.query.edit === '1', errors: {} });
 }
@@ -46,11 +47,6 @@ async function saveAnalysis(req, res) {
   res.redirect(`/projects/${req.project._id}/analysis`);
 }
 
-async function syncAnalysis(req, res) {
-  const added = await projectService.syncAnalysisFromMap(req.project, req.user);
-  req.flash(added ? 'success' : 'info', added ? `Added ${added} item(s) from your map.` : 'Your analysis already includes everything on the map.');
-  res.redirect(`/projects/${req.project._id}/analysis`);
-}
 
 function editForm(req, res) {
   res.render('projects/edit', { title: req.__('Edit {project}', { project: req.project.title }), values: req.project.toObject(), errors: {} });
@@ -78,4 +74,4 @@ async function destroy(req, res) {
   res.redirect('/dashboard');
 }
 
-module.exports = { newForm, renderCreateErrors, create, open, map, analysis, saveAnalysis, syncAnalysis, editForm, renderUpdateErrors, update, destroy };
+module.exports = { newForm, renderCreateErrors, create, open, map, analysis, saveAnalysis, editForm, renderUpdateErrors, update, destroy };

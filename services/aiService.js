@@ -247,6 +247,10 @@ TASK: Organize this idea for an idea map.
 - Give each node a unique key like "k1". Do not add a node for the idea itself: refer to it as "IDEA" in edges.
 - edges: connect related nodes using only: supports, depends_on, blocks, influences, alternative_to, part_of, tests, related_to.
   For example a goal is part_of IDEA, a risk blocks a goal, a resource supports IDEA, a person is part_of IDEA.
+- phases: a starter roadmap of 3-5 ordered phases to make the idea happen (e.g. preparing, building, launching, growing),
+  each with a short description, 1-3 milestones (checkpoints that show the phase is done) and 2-4 first tasks
+  (short, starting with a verb, with a priority). Base them on what the user wrote; keep amounts and names only if the user gave them.
+- Write all text in the same language the user wrote in.
 - Do not invent facts, names, numbers, dates or money that the user did not mention. At most 15 nodes.`;
   return run({ user, kind: 'idea', prompt, schema: schemas.ideaOutput, userPrompt: clipText(text) });
 }

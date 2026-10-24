@@ -5,7 +5,7 @@
   const sectionLabels = { summary: 'Summary', goals: 'Goals', coreComponents: 'Core components', assumptions: 'Assumptions', risks: 'Risks', unknowns: 'Unknowns', opportunities: 'Opportunities', nextSteps: 'Next steps' };
 %>
 <div class="ws-page">
-  <a class="back-link" href="/projects/<%= project._id %>/history#proposals"><i data-lucide="arrow-left" class="icon-sm"></i> <%= __('History') %></a>
+  <a class="back-link" href="/projects/<%= project._id %>/review"><i data-lucide="arrow-left" class="icon-sm"></i> <%= __('Review') %></a>
   <div class="ws-page-head mt-2">
     <div>
       <h1 class="d-flex align-items-center gap-2 flex-wrap"><%= __(proposal.title) %>
@@ -16,7 +16,7 @@
   </div>
 
   <% if (pending) { %>
-    <div class="alert alert-warning d-flex gap-2"><i data-lucide="shield-check" class="icon-sm mt-1"></i><div><%= __('Nothing has changed yet. Choose the items you want, then apply them.') %> <%= ['roadmap', 'tasks', 'taskdraft', 'replan'].includes(proposal.kind) ? __('Your current plan is saved as a version first, so you can restore it from History.') : '' %></div></div>
+    <div class="alert alert-warning d-flex gap-2"><i data-lucide="shield-check" class="icon-sm mt-1"></i><div><%= __('Nothing has changed yet. Choose the items you want, then apply them.') %> <%= ['roadmap', 'tasks', 'taskdraft', 'replan'].includes(proposal.kind) ? __('Your current plan is saved as a version first, so you can restore it from the Review page.') : '' %></div></div>
   <% } else if (proposal.appliedSummary) { %>
     <div class="alert alert-success"><%= __(proposal.appliedSummary) %></div>
   <% } %>
@@ -63,13 +63,32 @@
         <% }) %>
         <p class="small text-muted mb-0"><%= __('Connections are only created when both ends exist, so unchecking a node also skips its connections.') %><%= p.droppedEdges ? ' ' + __('{n} suggested connection(s) referenced unknown nodes and were discarded.', { n: p.droppedEdges }) : '' %></p>
       </div>
+      <% if (p.phases && p.phases.length) { %>
+        <div class="panel panel-body mb-3">
+          <h2 class="h6 mb-1"><i data-lucide="milestone" class="icon-sm"></i> <%= __('Ready-made roadmap ({n} phases)', { n: p.phases.length }) %></h2>
+          <p class="small text-muted"><%= __('These phases and first tasks go to your roadmap and task list. You can edit them later.') %></p>
+          <% p.phases.forEach(function (ph, i) { %>
+            <label class="proposal-item d-block">
+              <div class="d-flex gap-2 align-items-start">
+                <input class="form-check-input" type="checkbox" name="items" value="phase:<%= i %>" checked <%= dis %>>
+                <div class="flex-grow-1">
+                  <div class="fw-semibold"><%= __('Phase {n}', { n: i + 1 }) %>: <%= ph.title %></div>
+                  <% if (ph.description) { %><div class="small text-muted"><%= ph.description %></div><% } %>
+                  <% if (ph.milestones.length) { %><div class="small mt-1"><strong><%= __('Milestones:') %></strong> <%= ph.milestones.join(' · ') %></div><% } %>
+                  <% if (ph.tasks.length) { %><ul class="small mt-1 mb-0"><% ph.tasks.forEach(function (t) { %><li><span class="prio prio-<%= t.priority %>"><%= fmt.label(t.priority) %></span> <%= t.title %></li><% }) %></ul><% } %>
+                </div>
+              </div>
+            </label>
+          <% }) %>
+        </div>
+      <% } %>
     <% } %>
 
     <% if (proposal.kind === 'roadmap') { %>
       <div class="panel panel-body mb-3">
         <h2 class="h6"><%= __('How to apply') %></h2>
         <div class="form-check"><input class="form-check-input" type="radio" name="mode" id="modeAppend" value="append" checked <%= dis %>><label class="form-check-label" for="modeAppend"><%= __('Add these phases to my current plan') %></label></div>
-        <div class="form-check"><input class="form-check-input" type="radio" name="mode" id="modeReplace" value="replace" <%= dis %>><label class="form-check-label" for="modeReplace"><%= __('Replace my current phases and tasks (the current plan stays restorable in History)') %></label></div>
+        <div class="form-check"><input class="form-check-input" type="radio" name="mode" id="modeReplace" value="replace" <%= dis %>><label class="form-check-label" for="modeReplace"><%= __('Replace my current phases and tasks (the current plan stays restorable from the Review page)') %></label></div>
       </div>
       <p class="mb-2"><strong><%= p.title %></strong>: <%= p.objective %></p>
       <% p.phases.forEach(function (ph, i) { %>

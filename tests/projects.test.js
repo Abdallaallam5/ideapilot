@@ -95,7 +95,7 @@ describe('project ownership', () => {
     const intruder = await registerUser();
     const id = await createProject(owner);
 
-    for (const path of ['map', 'analysis', 'roadmap', 'tasks', 'history', 'edit']) {
+    for (const path of ['map', 'analysis', 'roadmap', 'tasks', 'review', 'edit']) {
       const res = await intruder.agent.get(`/projects/${id}/${path}`);
       expect(res.status).toBe(404);
     }
@@ -122,7 +122,7 @@ describe('project ownership', () => {
 });
 
 describe('analysis', () => {
-  test('saves analysis lists from textareas and pulls items from the map', async () => {
+  test('saves analysis lists from textareas and fills in items from the map automatically', async () => {
     const ctx = await registerUser();
     const id = await createProject(ctx);
     const res = await ctx.agent.post(`/projects/${id}/analysis`).type('form').send({
@@ -134,10 +134,16 @@ describe('analysis', () => {
     expect(p.analysis.risks).toEqual(['Water access']);
 
     await api(ctx, 'post', `/projects/${id}/graph/nodes`, { type: 'assumption', title: 'City lends the lot' });
-    await ctx.agent.post(`/projects/${id}/analysis/sync-map`).type('form').send({ _csrf: ctx.csrf });
-    p = await Project.findById(id).lean();
-    expect(p.analysis.assumptions).toEqual(['City lends the lot']);
     const page = await ctx.agent.get(`/projects/${id}/analysis`);
     expect(page.text).toContain('City lends the lot');
+    expect(page.text).not.toContain('sync-map');
+    p = await Project.findById(id).lean();
+    expect(p.analysis.assumptions).toEqual(['City lends the lot']);
+
+    // An item the user removes is not copied back on the next visit.
+    await ctx.agent.post(`/projects/${id}/analysis`).type('form').send({ _csrf: ctx.csrf, summary: 'A shared garden.', goals: 'Grow food', assumptions: '' });
+    await ctx.agent.get(`/projects/${id}/analysis`);
+    p = await Project.findById(id).lean();
+    expect(p.analysis.assumptions).toEqual([]);
   });
 });
