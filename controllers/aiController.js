@@ -88,10 +88,37 @@ async function tasksFromText(req, res) {
   return res.redirect(`/projects/${req.project._id}/proposals/${proposal._id}`);
 }
 
+/** The customer describes their plan in plain words; IdeaPilot proposes roadmap phases to review. */
+async function roadmapFromText(req, res) {
+  const { text } = req.validated;
+  const back = `/projects/${req.project._id}/roadmap`;
+  let result;
+  try {
+    result = await aiService.draftRoadmap(req.project, req.user, text);
+  } catch (err) {
+    if (err.name !== 'AIError') throw err;
+    await activity.record(req.project._id, req.user._id, 'ai_failed', `IdeaPilot request failed: ${err.message}`.slice(0, 500), { code: err.code });
+    req.session.roadmapDraftText = text;
+    req.flash('danger', err.message);
+    return res.redirect(back);
+  }
+  const proposal = await proposalService.create(req.project, req.user, {
+    kind: 'roadmap', origin: 'ai', title: req.__('Your roadmap, organized by IdeaPilot'), summary: '',
+    payload: proposalService.roadmapPayload(result.data), conversation: result.conversation,
+  });
+  return res.redirect(`/projects/${req.project._id}/proposals/${proposal._id}`);
+}
+
+function renderRoadmapTextErrors(req, res, errors) {
+  req.session.roadmapDraftText = req.body?.text || '';
+  req.flash('danger', errors.text || Object.values(errors)[0]);
+  res.redirect(`/projects/${req.project._id}/roadmap`);
+}
+
 function renderTaskTextErrors(req, res, errors) {
   req.session.taskDraftText = req.body?.text || '';
   req.flash('danger', errors.text || Object.values(errors)[0]);
   res.redirect(`/projects/${req.project._id}/tasks`);
 }
 
-module.exports = { ideaFromText, renderIdeaErrors, tasksFromText, renderTaskTextErrors, titleFromText };
+module.exports = { ideaFromText, renderIdeaErrors, tasksFromText, renderTaskTextErrors, roadmapFromText, renderRoadmapTextErrors, titleFromText };

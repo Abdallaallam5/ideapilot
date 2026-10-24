@@ -51,4 +51,22 @@ const taskDraftOutput = z.object({
   })).min(1).max(20),
 });
 
-module.exports = { ideaOutput, taskDraftOutput };
+/** A free-text plan turned into roadmap phases, milestones and tasks. */
+const roadmapDraftOutput = z.object({
+  title: str(140),
+  objective: z.string().trim().max(1000),
+  phases: z.array(z.object({
+    title: str(140),
+    description: z.string().trim().max(1000),
+    milestones: z.array(z.object({ title: str(140), description: z.string().trim().max(600) })).max(5),
+    tasks: z.array(z.object({
+      key: str(40),
+      title: str(200),
+      description: z.string().trim().max(1500),
+      priority: z.enum(PRIORITIES),
+      dependsOn: z.array(str(40)).max(8),
+    })).max(10),
+  })).min(1).max(8),
+});
+
+module.exports = { ideaOutput, taskDraftOutput, roadmapDraftOutput };

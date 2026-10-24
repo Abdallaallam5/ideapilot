@@ -20,8 +20,10 @@ async function roadmap(req, res) {
     return { phase: p, tasks, progress: taskService.progress(tasks) };
   });
   const unphased = taskData.all.filter((t) => !t.phaseId || !plan.phases.id(t.phaseId));
+  const draftText = req.session.roadmapDraftText || '';
+  delete req.session.roadmapDraftText;
   res.render('plans/roadmap', {
-    ...locals, title: `${req.project.title} · Roadmap`, plan, phases, unphased,
+    ...locals, title: `${req.project.title} · Roadmap`, plan, phases, unphased, draftText,
     allTasks: taskData.all, progress: taskData.progress, nodes,
   });
 }

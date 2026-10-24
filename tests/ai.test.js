@@ -229,6 +229,60 @@ describe('write your tasks', () => {
   });
 });
 
+describe('write your roadmap', () => {
+  const ROADMAP_REPLY = {
+    title: 'Bakery plan', objective: 'Sell from home within three months.',
+    phases: [
+      { title: 'Prepare', description: '', milestones: [{ title: 'Permit approved', description: '' }], tasks: [
+        { key: 't1', title: 'Get the permit', description: '', priority: 'high', dependsOn: [] },
+        { key: 't2', title: 'Test recipes', description: '', priority: 'medium', dependsOn: ['t1', 't9'] },
+      ] },
+      { title: 'Launch', description: 'Open for orders.', milestones: [], tasks: [
+        { key: 't3', title: 'Open the Instagram page', description: '', priority: 'medium', dependsOn: ['t2'] },
+      ] },
+    ],
+  };
+
+  test('the text becomes phases, milestones and tasks only after the customer applies them', async () => {
+    aiService.setConfigForTests(ENABLED);
+    aiService.setProviderForTests(reply(ROADMAP_REPLY));
+    const ctx = await registerUser();
+    const id = await createProject(ctx);
+    const form = await ctx.agent.get(`/projects/${id}/roadmap`);
+    expect(form.text).toContain(`/projects/${id}/roadmap/from-text`);
+
+    const res = await postForm(ctx, `/projects/${id}/roadmap/from-text`, { text: 'First the permit and recipes, then we open on Instagram.' });
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toMatch(/\/proposals\/[a-f0-9]{24}$/);
+    const proposal = await Proposal.findOne({ kind: 'roadmap' }).lean();
+    expect(proposal.payload.droppedDeps).toBe(1);
+    expect(await Task.countDocuments({ project: id })).toBe(0);
+    const page = await ctx.agent.get(res.headers.location);
+    expect(page.text).toContain('Permit approved');
+
+    const accept = await postForm(ctx, `${res.headers.location}/accept`, { items: ['phase:0', 'phase:1'], mode: 'append' });
+    expect(accept.headers.location).toBe(`/projects/${id}/roadmap`);
+    const plan = await Plan.findOne({ project: id, status: 'current' }).lean();
+    expect(plan.phases.map((p) => p.title)).toEqual(['Prepare', 'Launch']);
+    const tasks = await Task.find({ project: id }).lean();
+    const byTitle = Object.fromEntries(tasks.map((t) => [t.title, t]));
+    expect(String(byTitle['Open the Instagram page'].dependencies[0])).toBe(String(byTitle['Test recipes']._id));
+  });
+
+  test('a failed request keeps the text on the roadmap page', async () => {
+    aiService.setConfigForTests(ENABLED);
+    aiService.setProviderForTests({ generate: async () => { const e = new Error('overloaded'); e.status = 503; throw e; } });
+    const ctx = await registerUser();
+    const id = await createProject(ctx);
+    const res = await postForm(ctx, `/projects/${id}/roadmap/from-text`, { text: 'First the permit, then the launch.' });
+    expect(res.headers.location).toBe(`/projects/${id}/roadmap`);
+    const page = await ctx.agent.get(`/projects/${id}/roadmap`);
+    expect(page.text).toContain('First the permit, then the launch.');
+    expect(page.text).toContain('busy right now');
+    expect(await Proposal.countDocuments()).toBe(0);
+  });
+});
+
 describe('provider errors and limits', () => {
   async function tryTasks(ctx, id) {
     return api(ctx, 'post', `/projects/${id}/tasks/from-text`, { text: 'call the supplier' });

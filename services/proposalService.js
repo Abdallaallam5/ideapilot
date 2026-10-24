@@ -62,6 +62,20 @@ function graphPayload(data, nodeIdByRef, titleByRef = new Map()) {
   return { rationale: data.rationale, nodes, edges, droppedEdges: dropped, phases };
 }
 
+/** Shapes a drafted roadmap for the review page: unique task keys and only valid, acyclic dependencies. */
+function roadmapPayload(data) {
+  const seen = new Set();
+  const phases = data.phases.map((p) => ({
+    title: p.title,
+    description: p.description || '',
+    milestones: p.milestones.map((m) => ({ title: m.title, description: m.description || '' })),
+    tasks: p.tasks.filter((t) => !seen.has(t.key) && seen.add(t.key))
+      .map((t) => ({ key: t.key, title: t.title, description: t.description || '', priority: t.priority, dependsOn: t.dependsOn, deliverables: [], completionCriteria: '' })),
+  }));
+  const droppedDeps = pruneDependencies(phases.flatMap((p) => p.tasks));
+  return { title: data.title, objective: data.objective || '', phases, droppedDeps };
+}
+
 /** Removes unknown, self and circular dependencies (by task key) in place; returns how many were dropped. */
 function pruneDependencies(tasks) {
   const keys = new Set(tasks.map((t) => t.key));
@@ -361,5 +375,5 @@ const APPLY = {
 
 module.exports = {
   create, find, list, accept, reject,
-  graphPayload, taskDraftPayload, layoutNewNodes,
+  graphPayload, taskDraftPayload, roadmapPayload, layoutNewNodes,
 };

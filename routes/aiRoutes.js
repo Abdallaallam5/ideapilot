@@ -17,11 +17,16 @@ const taskTextSchema = z.object({
   text: requiredText(4000, 'What you need to do').refine((s) => s.length >= 3, 'Write at least one thing you need to do.'),
 });
 
+const roadmapTextSchema = z.object({
+  text: requiredText(4000, 'Your plan').refine((s) => s.length >= 10, 'Tell us a little more about how you want to go about it.'),
+});
+
 module.exports = function aiRoutes(env) {
   const router = express.Router();
   const limiter = createAILimiter(env);
 
   router.post('/projects/from-text', requireAuth, limiter, validateRequest(ideaTextSchema, { onError: ai.renderIdeaErrors }), ai.ideaFromText);
   router.post('/projects/:projectId/tasks/from-text', requireAuth, requireProjectOwner, limiter, validateRequest(taskTextSchema, { onError: ai.renderTaskTextErrors }), ai.tasksFromText);
+  router.post('/projects/:projectId/roadmap/from-text', requireAuth, requireProjectOwner, limiter, validateRequest(roadmapTextSchema, { onError: ai.renderRoadmapTextErrors }), ai.roadmapFromText);
   return router;
 };

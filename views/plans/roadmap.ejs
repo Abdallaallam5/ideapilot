@@ -22,6 +22,18 @@
     </form>
   </div>
 
+  <% if (aiStatus.enabled) { %>
+    <form class="task-writer panel panel-body mb-3" action="/projects/<%= project._id %>/roadmap/from-text" method="post" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+      <label class="task-writer-label" for="roadmapText"><i data-lucide="pen-line" class="icon-sm"></i> <%= __('Write how you want to go about it') %></label>
+      <p class="small text-muted mb-2"><%= __('Describe your stages in your own words. IdeaPilot turns them into phases, milestones and tasks, and you review them before anything is saved.') %></p>
+      <textarea class="form-control" id="roadmapText" name="text" rows="3" maxlength="4000" required placeholder="<%= __('e.g. First month I get the permit and test recipes. Then we open the Instagram page and take the first orders from neighbours. After that we start delivering to the whole area.') %>"><%= draftText %></textarea>
+      <div class="d-flex justify-content-end mt-2">
+        <button class="btn btn-primary btn-sm" type="submit" data-busy-label="<%= __('IdeaPilot is building your roadmap…') %>"><i data-lucide="wand-sparkles" class="icon-sm"></i> <%= __('Turn into a roadmap') %></button>
+      </div>
+    </form>
+  <% } %>
+
   <div class="panel panel-body mb-3 d-flex flex-wrap align-items-center gap-4">
     <div class="flex-grow-1" style="min-width: 220px">
       <div class="d-flex justify-content-between small fw-semibold mb-1"><span><%= __('Overall progress') %></span><span data-progress-text><%= __('{done} of {total} tasks', { done: progress.completed, total: progress.total }) %> · <%= progress.percent %>%</span></div>

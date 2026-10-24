@@ -914,5 +914,13 @@
   "Created a roadmap with {phases} phase(s) and {tasks} task(s).": "اتعملت خارطة طريق فيها {phases} مرحلة و{tasks} مهمة.",
   "Added {nodes} node(s) and {edges} connection(s) to the map. Created a roadmap with {phases} phase(s) and {tasks} task(s).": "اتضاف {nodes} عنصر و{edges} رابط للخريطة، واتعملت خارطة طريق فيها {phases} مرحلة و{tasks} مهمة.",
   "Restored. The plan is now version {v}, copied from version {from}. The replaced plan is kept under earlier versions on the Review page.": "اترجعت. الخطة دلوقتي الإصدار {v}، منسوخة من الإصدار {from}. والخطة القديمة محفوظة في الإصدارات السابقة في صفحة المراجعة.",
-  "Review page": "صفحة المراجعة"
+  "Review page": "صفحة المراجعة",
+  "Write how you want to go about it": "اكتب هتمشي إزاي",
+  "Describe your stages in your own words. IdeaPilot turns them into phases, milestones and tasks, and you review them before anything is saved.": "احكي مراحلك بكلامك، وIdeaPilot يحولها لمراحل ومحطات ومهام، وتراجعها قبل ما أي حاجة تتحفظ.",
+  "e.g. First month I get the permit and test recipes. Then we open the Instagram page and take the first orders from neighbours. After that we start delivering to the whole area.": "مثلاً: أول شهر أطلع التصريح وأجرب الوصفات. بعدين نفتح صفحة انستجرام وناخد أول طلبات من الجيران. وبعد كده نبدأ نوصّل للمنطقة كلها.",
+  "IdeaPilot is building your roadmap…": "IdeaPilot بيبني خارطة الطريق…",
+  "Turn into a roadmap": "حوّلها لخارطة طريق",
+  "Your roadmap, organized by IdeaPilot": "خارطة طريقك، منظمة من IdeaPilot",
+  "Your plan is required.": "اكتب خطتك الأول.",
+  "Tell us a little more about how you want to go about it.": "احكيلنا أكتر شوية هتمشي إزاي."
 }
