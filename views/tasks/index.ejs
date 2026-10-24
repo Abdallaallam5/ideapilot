@@ -11,15 +11,21 @@
         <a class="btn btn-sm <%= view === 'list' ? 'btn-primary' : 'btn-light' %>" href="<%= qs({ view: 'list' }) %>" <%= view === 'list' ? 'aria-current=page' : '' %>><i data-lucide="list" class="icon-sm"></i> <%= __('List') %></a>
         <a class="btn btn-sm <%= view === 'kanban' ? 'btn-primary' : 'btn-light' %>" href="<%= qs({ view: 'kanban' }) %>" <%= view === 'kanban' ? 'aria-current=page' : '' %>><i data-lucide="kanban" class="icon-sm"></i> <%= __('Kanban') %></a>
       </div>
-      <% if (aiStatus.enabled && allTasks.length) { %>
-        <form action="/projects/<%= project._id %>/ai/tasks" method="post" data-ai-inline>
-          <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
-          <button class="btn btn-copilot btn-sm" type="submit"><i data-lucide="sparkles" class="icon-sm"></i> <%= __('Improve with IdeaPilot') %></button>
-        </form>
-      <% } %>
       <a class="btn btn-primary btn-sm" href="/projects/<%= project._id %>/tasks/new"><i data-lucide="plus" class="icon-sm"></i> <%= __('New task') %></a>
     </div>
   </div>
+
+  <% if (aiStatus.enabled) { %>
+    <form class="task-writer panel panel-body mb-3" action="/projects/<%= project._id %>/tasks/from-text" method="post" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+      <label class="task-writer-label" for="taskText"><i data-lucide="pen-line" class="icon-sm"></i> <%= __('Write what you need to do') %></label>
+      <p class="small text-muted mb-2"><%= __('Use your own words. IdeaPilot splits it into tasks with priorities and order, and you choose which ones to add.') %></p>
+      <textarea class="form-control" id="taskText" name="text" rows="3" maxlength="4000" required placeholder="<%= __('e.g. This week I need to photograph the products urgently, then open an Instagram page, and call the packaging supplier.') %>"><%= draftText %></textarea>
+      <div class="d-flex justify-content-end mt-2">
+        <button class="btn btn-primary btn-sm" type="submit" data-busy-label="<%= __('IdeaPilot is organizing your tasks…') %>"><i data-lucide="wand-sparkles" class="icon-sm"></i> <%= __('Turn into tasks') %></button>
+      </div>
+    </form>
+  <% } %>
 
   <div class="progress mb-3" style="height: 6px" role="progressbar" aria-label="<%= __('Task progress') %>" aria-valuenow="<%= progress.percent %>" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" data-progress-bar style="width: <%= progress.percent %>%"></div></div>
 

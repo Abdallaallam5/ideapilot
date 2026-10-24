@@ -6,8 +6,6 @@ const Task = require('../models/Task');
 const graphService = require('./graphService');
 const planService = require('./planService');
 const proposalService = require('./proposalService');
-const aiService = require('./aiService');
-const logger = require('../utils/logger');
 const { tr } = require('../utils/requestContext');
 const { label } = require('../utils/format');
 
@@ -88,7 +86,7 @@ function describeImpact(impact, changeType) {
 }
 
 /** Builds a replan proposal. Nothing is changed until the user accepts it. */
-async function proposeReplan(project, user, { nodeId, changeType, note, useAI }) {
+async function proposeReplan(project, user, { nodeId, changeType, note }) {
   const impact = await analyzeImpact(project, nodeId);
   const { changed } = impact;
   const explanation = describeImpact(impact, changeType);
@@ -138,19 +136,6 @@ async function proposeReplan(project, user, { nodeId, changeType, note, useAI })
     });
   }
 
-  let aiNote = null;
-  if (useAI) {
-    try {
-      const impactText = `${explanation}\nAffected tasks: ${impact.affectedTasks.map((a) => a.task.title).join('; ')}\nUser note: ${note || '-'}`;
-      const { data } = await aiService.replanSuggestions(project, user, impactText);
-      for (const act of data.actions) newTasks.push({ ...act, origin: 'ai', defaultSelected: false });
-      aiNote = { ok: true, explanation: data.explanation };
-    } catch (err) {
-      logger.warn('AI replan suggestions failed', { code: err.code });
-      aiNote = { ok: false, message: err.message };
-    }
-  }
-
   const nodeUpdate = changeType === 'invalidated' ? { status: 'invalidated' } : null;
   return proposalService.create(project, user, {
     kind: 'replan',
@@ -164,7 +149,7 @@ async function proposeReplan(project, user, { nodeId, changeType, note, useAI })
       affectedMilestones: impact.affectedMilestones,
       milestoneNodes: impact.milestoneNodes,
       affectedTasks: impact.affectedTasks.map((a) => ({ id: String(a.task._id), title: a.task.title, status: a.task.status, direct: a.direct, reason: a.reason })),
-      taskChanges, newTasks, ai: aiNote,
+      taskChanges, newTasks,
     },
   });
 }

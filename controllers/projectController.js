@@ -5,13 +5,14 @@ const graphService = require('../services/graphService');
 const Task = require('../models/Task');
 const { workspaceLocals } = require('./workspace');
 const { wantsJson } = require('../utils/http');
+const aiService = require('../services/aiService');
 
 function newForm(req, res) {
-  res.render('projects/new', { title: 'Create an idea', values: {}, errors: {} });
+  res.render('projects/new', { title: 'Create an idea', manual: req.query.manual === '1', values: {}, errors: {}, aiEnabled: aiService.status().enabled });
 }
 
 function renderCreateErrors(req, res, errors) {
-  res.status(422).render('projects/new', { title: 'Create an idea', values: req.body || {}, errors });
+  res.status(422).render('projects/new', { title: 'Create an idea', manual: true, values: req.body || {}, errors, aiEnabled: aiService.status().enabled });
 }
 
 async function create(req, res) {

@@ -55,7 +55,6 @@ const replanSchema = z.object({
   nodeId: objectId,
   changeType: z.enum(['invalidated', 'changed']),
   note: optionalText(1000),
-  useAI: checkbox.optional(),
 });
 
 const decisionSchema = z.object({

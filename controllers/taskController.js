@@ -34,10 +34,12 @@ async function index(req, res) {
   ]);
   const phaseTitle = new Map(options.phases.map((p) => [String(p._id), p.title]));
   const columns = TASK_STATUSES.map((status) => ({ status, tasks: data.tasks.filter((t) => t.status === status) }));
+  const draftText = req.session.taskDraftText || '';
+  delete req.session.taskDraftText;
   res.render('tasks/index', {
     ...locals, ...options, title: `${req.project.title} · Tasks`, view, filters,
     tasks: data.tasks, progress: data.progress, columns, phaseTitle,
-    hasFilters: Boolean(filters.status || filters.priority || filters.phaseId || filters.q),
+    hasFilters: Boolean(filters.status || filters.priority || filters.phaseId || filters.q), draftText,
   });
 }
 

@@ -36,12 +36,8 @@ async function list(project, { status } = {}) {
 
 // ---------- Builders: turn validated AI output into reviewable payloads ----------
 
-function analysisPayload(data) {
-  return { analysis: data };
-}
-
 /** Maps AI graph output to a payload, dropping edges that reference unknown nodes. */
-function graphPayload(data, nodeIdByRef) {
+function graphPayload(data, nodeIdByRef, titleByRef = new Map()) {
   const keys = new Set();
   const nodes = [];
   for (const n of data.nodes) {
@@ -49,7 +45,7 @@ function graphPayload(data, nodeIdByRef) {
     keys.add(n.key);
     nodes.push({ key: n.key, type: n.type, title: n.title, description: n.description || '' });
   }
-  const resolve = (ref) => (keys.has(ref) ? { kind: 'new', ref } : nodeIdByRef.has(ref) ? { kind: 'existing', ref: nodeIdByRef.get(ref) } : null);
+  const resolve = (ref) => (keys.has(ref) ? { kind: 'new', ref } : nodeIdByRef.has(ref) ? { kind: 'existing', ref: nodeIdByRef.get(ref), title: titleByRef.get(ref) || '' } : null);
   const edges = [];
   let dropped = 0;
   for (const e of data.edges) {
@@ -61,50 +57,39 @@ function graphPayload(data, nodeIdByRef) {
   return { rationale: data.rationale, nodes, edges, droppedEdges: dropped };
 }
 
-/** Normalizes AI roadmap output and removes unknown or circular dependencies deterministically. */
-function roadmapPayload(data) {
-  const allKeys = new Set();
-  const phases = data.phases.map((p) => ({
-    title: p.title,
-    description: p.description || '',
-    milestones: p.milestones.map((m) => ({ title: m.title, description: m.description || '' })),
-    tasks: p.tasks.filter((t) => !allKeys.has(t.key) && allKeys.add(t.key)).map((t) => ({ ...t })),
-  }));
+/** Removes unknown, self and circular dependencies (by task key) in place; returns how many were dropped. */
+function pruneDependencies(tasks) {
+  const keys = new Set(tasks.map((t) => t.key));
   const graph = new Map();
-  let droppedDeps = 0;
-  for (const p of phases) {
-    for (const t of p.tasks) {
-      const kept = [];
-      for (const dep of [...new Set(t.dependsOn)]) {
-        if (dep === t.key || !allKeys.has(dep) || taskService.wouldCreateCycle(graph, t.key, [dep])) {
-          droppedDeps++;
-          continue;
-        }
-        kept.push(dep);
-        graph.set(t.key, kept);
+  let dropped = 0;
+  for (const t of tasks) {
+    const kept = [];
+    for (const dep of [...new Set(t.dependsOn)]) {
+      if (dep === t.key || !keys.has(dep) || taskService.wouldCreateCycle(graph, t.key, [dep])) {
+        dropped++;
+        continue;
       }
-      t.dependsOn = kept;
+      kept.push(dep);
+      graph.set(t.key, kept);
     }
+    t.dependsOn = kept;
   }
-  return { title: data.title, objective: data.objective, rationale: data.rationale, phases, droppedDeps };
+  return dropped;
 }
 
-function taskImprovementPayload(data, taskIdByRef, tasks) {
-  const byId = new Map(tasks.map((t) => [String(t._id), t]));
-  const improvements = [];
-  for (const imp of data.improvements) {
-    const taskId = taskIdByRef.get(imp.taskRef);
-    const task = taskId && byId.get(taskId);
-    if (!task) continue;
-    const changes = {};
-    if (imp.title && imp.title !== task.title) changes.title = imp.title;
-    if (imp.description && imp.description !== task.description) changes.description = imp.description;
-    if (imp.priority && imp.priority !== task.priority) changes.priority = imp.priority;
-    if (imp.completionCriteria && imp.completionCriteria !== task.completionCriteria) changes.completionCriteria = imp.completionCriteria;
-    if (!Object.keys(changes).length) continue;
-    improvements.push({ taskId, currentTitle: task.title, changes, reason: imp.reason });
-  }
-  return { summary: data.summary, improvements, missingTasks: data.missingTasks };
+/** Maps drafted tasks to a payload, resolving phase and map refs and dropping bad dependencies. */
+function taskDraftPayload(data, { nodeIdByRef, phaseIdByRef }) {
+  const seen = new Set();
+  const tasks = data.tasks
+    .filter((t) => !seen.has(t.key) && seen.add(t.key))
+    .map((t) => ({
+      key: t.key, title: t.title, description: t.description || '', priority: t.priority,
+      phaseId: phaseIdByRef.get(t.phase) || null,
+      linkedNode: nodeIdByRef.get(t.linkedNode) || null,
+      dependsOn: [...t.dependsOn],
+    }));
+  const droppedDeps = pruneDependencies(tasks);
+  return { tasks, droppedDeps };
 }
 
 // ---------- Accept / reject ----------
@@ -149,6 +134,35 @@ async function accept(project, proposalId, user, { selection = null, mode = 'app
   }
 }
 
+// Map elements of the same type sit next to each other around the idea.
+const TYPE_ORDER = ['goal', 'milestone', 'person', 'resource', 'decision', 'note', 'task', 'risk', 'assumption'];
+
+/**
+ * Positions for new nodes. On a fresh map (just the idea) they form rings around
+ * it, grouped by type; otherwise they go in rows below the existing map.
+ */
+function layoutNewNodes(existing, nodes) {
+  if (existing.length <= 1) {
+    const center = existing[0]?.position || { x: 0, y: 0 };
+    const order = nodes.map((n, i) => i).sort((a, b) => TYPE_ORDER.indexOf(nodes[a].type) - TYPE_ORDER.indexOf(nodes[b].type) || a - b);
+    const out = new Array(nodes.length);
+    const perRing = 10;
+    order.forEach((nodeIdx, k) => {
+      const ring = Math.floor(k / perRing);
+      const inRing = Math.min(perRing, order.length - ring * perRing);
+      const angle = -Math.PI / 2 + ((k % perRing) / inRing) * 2 * Math.PI + ring * 0.3;
+      const rx = 360 + ring * 260;
+      const ry = 240 + ring * 190;
+      out[nodeIdx] = { x: Math.round(center.x + rx * Math.cos(angle)), y: Math.round(center.y + ry * Math.sin(angle)) };
+    });
+    return out;
+  }
+  const cx = existing.reduce((s, n) => s + n.position.x, 0) / existing.length;
+  const maxY = Math.max(...existing.map((n) => n.position.y));
+  const perRow = 4;
+  return nodes.map((n, idx) => ({ x: Math.round(cx + ((idx % perRow) - (perRow - 1) / 2) * 240), y: Math.round(maxY + 190 + Math.floor(idx / perRow) * 160) }));
+}
+
 const APPLY = {
   async analysis(project, proposal, user, { selection }) {
     const a = proposal.payload.analysis;
@@ -167,14 +181,11 @@ const APPLY = {
     if (!chosen.length && !chosenEdges.length) throw unprocessable('Select at least one node or connection to add.');
 
     const existing = await IdeaNode.find({ project: project._id }).select('position').lean();
-    const cx = existing.length ? existing.reduce((s, n) => s + n.position.x, 0) / existing.length : 0;
-    const maxY = existing.length ? Math.max(...existing.map((n) => n.position.y)) : 0;
+    const positions = layoutNewNodes(existing, chosen);
     const keyToId = new Map();
-    const perRow = 4;
     for (const [idx, n] of chosen.entries()) {
       const node = await (require('./graphService')).createNode(project, {
-        type: n.type, title: n.title, description: n.description,
-        position: { x: Math.round(cx + ((idx % perRow) - (perRow - 1) / 2) * 220), y: Math.round(maxY + 180 + Math.floor(idx / perRow) * 150) },
+        type: n.type, title: n.title, description: n.description, position: positions[idx],
       }, user, { source: 'ai', silent: true });
       keyToId.set(n.key, String(node._id));
     }
@@ -248,6 +259,27 @@ const APPLY = {
     return { summary: `Updated ${updated} task(s) and added ${adds.length} task(s) in plan version ${next.version}.`, planVersion: next.version };
   },
 
+  async taskdraft(project, proposal, user, { selection }) {
+    const chosen = proposal.payload.tasks.map((t, i) => ({ ...t, i })).filter((t) => selected(selection, 'task', t.i));
+    if (!chosen.length) throw unprocessable('Select at least one task to add.');
+    const next = await planService.createVersion(project, user, { source: 'ai', changeSummary: `Added ${chosen.length} task(s) written by you and organized by IdeaPilot.` });
+    const plan = await planService.getCurrentPlan(project);
+    const keyToId = new Map();
+    for (const t of chosen) {
+      const linked = t.linkedNode && (await IdeaNode.exists({ _id: t.linkedNode, project: project._id })) ? t.linkedNode : undefined;
+      const task = await taskService.createTask(project, {
+        title: t.title, description: t.description, priority: t.priority,
+        phaseId: t.phaseId && plan.phases.id(t.phaseId) ? t.phaseId : undefined, linkedNode: linked,
+      }, user, { silent: true });
+      keyToId.set(t.key, task._id);
+    }
+    for (const t of chosen) {
+      const deps = t.dependsOn.map((k) => keyToId.get(k)).filter(Boolean);
+      if (deps.length) await Task.updateOne({ _id: keyToId.get(t.key), project: project._id }, { $set: { dependencies: deps } });
+    }
+    return { summary: `Added ${chosen.length} task(s) in plan version ${next.version}.`, planVersion: next.version };
+  },
+
   async replan(project, proposal, user, { selection }) {
     const p = proposal.payload;
     const taskChanges = p.taskChanges.map((x, i) => ({ ...x, i })).filter((x) => selected(selection, 'task', x.i));
@@ -293,5 +325,5 @@ const APPLY = {
 
 module.exports = {
   create, find, list, accept, reject,
-  analysisPayload, graphPayload, roadmapPayload, taskImprovementPayload,
+  graphPayload, taskDraftPayload, layoutNewNodes,
 };

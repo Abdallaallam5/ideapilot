@@ -15,9 +15,6 @@
     <span class="ws-progress d-none d-lg-flex" title="<%= __('{done} of {total} tasks completed', { done: stats.completed, total: stats.total }) %>">
       <span class="ws-progress-bar"><span style="width: <%= stats.progress %>%"></span></span><span data-progress-label><%= stats.progress %>%</span>
     </span>
-    <button class="btn btn-copilot btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#aiPanel" aria-controls="aiPanel">
-      <i data-lucide="sparkles" class="icon-sm"></i><span class="d-none d-sm-inline"><%= __('Assistant') %></span>
-    </button>
     <%- include('langToggle', { toggleClass: 'btn btn-ws-icon btn-sm' }) %>
     <div class="dropdown">
       <button class="btn btn-ws-icon" data-bs-toggle="dropdown" aria-expanded="false" aria-label="<%= __('Project and account menu') %>"><i data-lucide="more-vertical" class="icon-sm"></i></button>

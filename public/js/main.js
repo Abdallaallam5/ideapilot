@@ -154,6 +154,13 @@
       if (form.hasAttribute('data-no-guard')) return;
       if (form.dataset.submitting === '1') { e.preventDefault(); return; }
       form.dataset.submitting = '1';
+      // Slow requests (IdeaPilot reading a text) show what is happening on the button.
+      var busy = e.submitter && e.submitter.getAttribute('data-busy-label');
+      if (busy) {
+        var btn = e.submitter;
+        setTimeout(function () { btn.disabled = true; btn.textContent = busy; }, 0);
+        return;
+      }
       setTimeout(function () { form.dataset.submitting = '0'; }, 4000);
     });
   }

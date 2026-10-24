@@ -62,15 +62,20 @@ async function replan(req, res) {
 }
 
 async function showProposal(req, res) {
-  const [locals, proposal] = await Promise.all([workspaceLocals(req, 'history'), proposalService.find(req.project, req.params.proposalId)]);
-  res.render('proposals/show', { ...locals, title: proposal.title, proposal: proposal.toObject() });
+  const [locals, proposal, plan, nodes] = await Promise.all([
+    workspaceLocals(req, 'history'),
+    proposalService.find(req.project, req.params.proposalId),
+    planService.getCurrentPlan(req.project),
+    IdeaNode.find({ project: req.project._id }).select('title').lean(),
+  ]);
+  res.render('proposals/show', { ...locals, title: proposal.title, proposal: proposal.toObject(), phases: plan.phases, nodes });
 }
 
 async function acceptProposal(req, res) {
   const selection = new Set(req.validated.items);
   const result = await proposalService.accept(req.project, req.params.proposalId, req.user, { selection, mode: req.validated.mode });
   req.flash('success', `Applied. ${result.summary}`);
-  const target = { graph: 'map', analysis: 'analysis', roadmap: 'roadmap', tasks: 'tasks', replan: 'roadmap' }[result.proposal.kind] || 'history';
+  const target = { graph: 'map', analysis: 'analysis', roadmap: 'roadmap', tasks: 'tasks', taskdraft: 'tasks', replan: 'roadmap' }[result.proposal.kind] || 'history';
   res.redirect(`/projects/${req.project._id}/${target}`);
 }
 

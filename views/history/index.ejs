@@ -88,7 +88,7 @@
       <section class="panel" id="proposals" aria-labelledby="proposals-title">
         <div class="panel-head"><h2 id="proposals-title"><i data-lucide="inbox" class="icon-sm"></i> <%= __('Suggestions and proposals') %></h2></div>
         <div class="panel-body">
-          <% if (!proposals.length) { %><p class="text-muted small mb-0"><%= __('No proposals yet. They appear when you replan or use the IdeaPilot assistant.') %></p><% } %>
+          <% if (!proposals.length) { %><p class="text-muted small mb-0"><%= __('No proposals yet. They appear when you replan or write your idea or tasks in your own words.') %></p><% } %>
           <% proposals.forEach(function (p) { %>
             <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
               <span class="status-badge <%= p.status === 'accepted' ? 'status-completed' : p.status === 'rejected' ? 'status-blocked' : 'status-in_progress' %>"><%= fmt.label(p.status) %></span>

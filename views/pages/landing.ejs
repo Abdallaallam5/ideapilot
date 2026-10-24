@@ -62,7 +62,7 @@
         { icon: 'milestone', title: 'Roadmaps with phases', text: 'Organize work into phases and milestones, set priorities and optional deadlines, and see progress per phase.' },
         { icon: 'kanban', title: 'List and Kanban tasks', text: 'Manage tasks in a list or drag them across a board. Dependencies are validated, and blocked or overdue work is flagged.' },
         { icon: 'git-branch', title: 'Replanning and versions', text: 'When an assumption fails, IdeaPilot traces what it affects and proposes changes. Accepted changes become a new plan version you can always roll back.' },
-        { icon: 'sparkles', title: 'IdeaPilot assistant', text: 'IdeaPilot analyzes your idea, suggests what is missing and drafts roadmaps. Suggestions arrive as proposals you approve or reject.' },
+        { icon: 'wand-sparkles', title: 'Write it, see it', text: 'Describe your idea or your to-dos in a message. IdeaPilot organizes them into a map or a task list, and you approve every item first.' },
       ].forEach(function (f) { %>
         <div class="col-md-6 col-lg-4">
           <div class="feature-card"><span class="feature-icon"><i data-lucide="<%= f.icon %>"></i></span><h3 class="h5"><%= __(f.title) %></h3><p><%= __(f.text) %></p></div>
@@ -80,9 +80,9 @@
     </div>
     <div class="row g-4 steps">
       <% [
-        { n: 1, title: 'Describe your idea', text: 'Give it a title and a short description. Add the outcome you want, your audience, time, budget or constraints if you know them.' },
-        { n: 2, title: 'Map it visually', text: 'Break the idea into components on an interactive map. Mark what you are assuming, what could go wrong, and what you already have.' },
-        { n: 3, title: 'Build the plan', text: 'Turn the map into phases, milestones and tasks, by hand or with a draft from IdeaPilot. Set priorities and link tasks to the parts of the map they serve.' },
+        { n: 1, title: 'Describe your idea', text: 'Write it in your own words, like a message to a friend: what you want to do, who is involved, what you want to achieve and what worries you.' },
+        { n: 2, title: 'See it as a map', text: 'IdeaPilot draws your idea as a map of goals, people, risks and resources. Keep what is right, remove what is not, and keep shaping it.' },
+        { n: 3, title: 'Write your tasks', text: 'Type what you need to do in plain words. IdeaPilot turns it into clear tasks with priorities and order, in phases you control.' },
         { n: 4, title: 'Execute and adapt', text: 'Move tasks forward, watch progress, and when something important changes, replan. Every version and decision stays in your history.' },
       ].forEach(function (s) { %>
         <div class="col-md-6 col-lg-3"><div class="step-card"><span class="step-num"><%= s.n %></span><h3 class="h6"><%= __(s.title) %></h3><p><%= __(s.text) %></p></div></div>
@@ -110,7 +110,7 @@
     <div class="accordion faq" id="faqAccordion">
       <% [
         { q: 'What kinds of ideas can I plan?', a: 'Anything with a goal: businesses, websites and apps, learning goals, research, creative projects, events, home projects. Node types such as goals, assumptions and risks apply to every domain.' },
-        { q: 'Do I have to use the IdeaPilot assistant?', a: 'No. Maps, analysis, roadmaps, tasks, replanning and version history all work by hand. The IdeaPilot assistant is there when you want a head start.' },
+        { q: 'Do I have to write everything as a message?', a: 'No. Writing is the quickest way to start, but you can add and edit every map element and task by hand at any time.' },
         { q: 'Will IdeaPilot change my plan without asking?', a: 'Never. IdeaPilot’s suggestions are shown as a proposal. You choose which items to apply, and plan changes are saved as a new version so you can restore the previous one.' },
         { q: 'What happens when an assumption turns out to be wrong?', a: 'Mark it as changed or invalidated from the map. IdeaPilot follows the connections on your map and the dependencies between tasks to show what is affected, then proposes changes you can accept or reject.' },
         { q: 'Is my data private?', a: 'Your projects are only visible to your account. Passwords are hashed with bcrypt, sessions are stored server-side, and every request is checked for project ownership.' },

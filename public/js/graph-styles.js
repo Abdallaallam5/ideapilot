@@ -6,6 +6,7 @@
   var NODE_TYPES = {
     idea: { color: '#7c5cff', text: '#ffffff', border: '#c4b5fd', shape: 'round-rectangle', label: __('Idea'), icon: 'lightbulb' },
     goal: { color: '#059669', text: '#ffffff', border: '#6ee7b7', shape: 'round-hexagon', label: __('Goal'), icon: 'target' },
+    person: { color: '#ea580c', text: '#ffffff', border: '#fed7aa', shape: 'ellipse', label: __('Person / team'), icon: 'users' },
     assumption: { color: '#f59e0b', text: '#2b1a00', border: '#fde68a', shape: 'round-rectangle', label: __('Assumption'), icon: 'circle-help' },
     risk: { color: '#dc2626', text: '#ffffff', border: '#fecaca', shape: 'round-octagon', label: __('Risk'), icon: 'triangle-alert' },
     resource: { color: '#0891b2', text: '#ffffff', border: '#a5f3fc', shape: 'barrel', label: __('Resource'), icon: 'package' },
@@ -18,6 +19,7 @@
   // Lucide icon bodies (ISC licence), drawn inside each node so its type reads without colour alone.
   var ICONS = {
     idea: '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',
+    person: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/>',
     goal: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
     assumption: '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
     risk: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
@@ -51,12 +53,13 @@
   function nodeWidth(ele) {
     var t = String(ele.data('title') || '');
     var type = ele.data('type');
-    var base = type === 'decision' ? 190 : 160;
+    var base = type === 'decision' ? 190 : type === 'person' ? 180 : 160;
     return Math.min(270, Math.max(base, Math.min(t.length, 30) * 8 + 48));
   }
   function nodeHeight(ele) {
     var type = ele.data('type');
     if (type === 'decision') return 104;
+    if (type === 'person') return 84;
     if (type === 'idea') return 82;
     if (type === 'goal' || type === 'risk') return 80;
     return 72;

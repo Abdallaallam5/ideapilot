@@ -6,6 +6,7 @@ const LABELS = {
   active: 'Active', on_hold: 'On hold', completed: 'Completed', archived: 'Archived',
   todo: 'To do', in_progress: 'In progress', blocked: 'Blocked',
   low: 'Low', medium: 'Medium', high: 'High', critical: 'Critical',
+  person: 'Person / team',
 };
 
 function label(value) {

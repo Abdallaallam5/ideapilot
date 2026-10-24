@@ -1,18 +1,44 @@
 <section class="container page-narrow py-5">
   <a class="back-link" href="/dashboard"><i data-lucide="arrow-left" class="icon-sm"></i> <%= __('Dashboard') %></a>
-  <h1 class="h2 mt-2 mb-1"><%= __('Create an idea') %></h1>
-  <p class="text-muted mb-4"><%= __('Only a title and a description are required. You can add details now or later.') %></p>
-  <div class="card surface-card">
-    <div class="card-body p-4">
-      <%- include('../partials/formErrors', { errors }) %>
-      <form action="/projects" method="post" novalidate>
-        <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
-        <%- include('_fields', { values, errors }) %>
-        <div class="d-flex justify-content-end gap-2 mt-4">
-          <a class="btn btn-light" href="/dashboard"><%= __('Cancel') %></a>
-          <button class="btn btn-primary" type="submit"><i data-lucide="rocket" class="icon-sm"></i> <%= __('Create and open workspace') %></button>
-        </div>
-      </form>
+  <% if (manual) { %>
+    <h1 class="h2 mt-2 mb-1"><%= __('Create an idea') %></h1>
+    <p class="text-muted mb-4"><%= __('Only a title and a description are required. You can add details now or later.') %> <a href="/projects/new"><%= __('Or just describe it in your own words.') %></a></p>
+    <div class="card surface-card">
+      <div class="card-body p-4">
+        <%- include('../partials/formErrors', { errors }) %>
+        <form action="/projects" method="post" novalidate>
+          <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+          <%- include('_fields', { values, errors }) %>
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <a class="btn btn-light" href="/dashboard"><%= __('Cancel') %></a>
+            <button class="btn btn-primary" type="submit"><i data-lucide="rocket" class="icon-sm"></i> <%= __('Create and open workspace') %></button>
+          </div>
+        </form>
+      </div>
     </div>
-  </div>
+  <% } else { %>
+    <h1 class="h2 mt-2 mb-1"><%= __('Tell us your idea') %></h1>
+    <p class="text-muted mb-4"><%= aiEnabled ? __('Write it the way you would explain it to a friend: what you want to do, who is involved, what you want to achieve, what worries you and what you already have. IdeaPilot turns it into a map you can review before anything is saved to it.') : __('Write it the way you would explain it to a friend. Your text becomes the idea’s description, and you build the map from there.') %></p>
+    <div class="card surface-card idea-writer">
+      <div class="card-body p-4">
+        <% if (typeof ideaError !== 'undefined' && ideaError) { %>
+          <div class="alert alert-danger d-flex gap-2" role="alert"><i data-lucide="circle-alert" class="icon-sm mt-1"></i><div><%= __(ideaError) %></div></div>
+        <% } %>
+        <form action="/projects/from-text" method="post" data-idea-form novalidate>
+          <input type="hidden" name="_csrf" value="<%= csrfToken() %>">
+          <label class="visually-hidden" for="ideaText"><%= __('Your idea') %></label>
+          <textarea class="form-control idea-textarea" id="ideaText" name="text" rows="8" maxlength="4000" required placeholder="<%= __('e.g. I want to start a small home bakery with my sister. Our goal is to sell 50 boxes a week to neighbors through WhatsApp. We are worried about the food permit. We have an oven and a budget of 5,000.') %>"><%= values.text || '' %></textarea>
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+            <a class="small" href="/projects/new?manual=1"><%= __('Prefer a form? Fill in the details yourself') %></a>
+            <div class="d-flex gap-2">
+              <% if (typeof canSkipAnalysis !== 'undefined' && canSkipAnalysis) { %>
+                <button class="btn btn-light" type="submit" name="plain" value="true"><%= __('Create it without the map') %></button>
+              <% } %>
+              <button class="btn btn-primary" type="submit" data-busy-label="<%= __('IdeaPilot is reading your idea…') %>"><i data-lucide="<%= aiEnabled ? 'wand-sparkles' : 'rocket' %>" class="icon-sm"></i> <%= aiEnabled ? __('Draw my idea') : __('Create and open workspace') %></button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  <% } %>
 </section>

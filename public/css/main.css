@@ -213,3 +213,18 @@ html[lang="ar"] body, html[lang="ar"] h1, html[lang="ar"] h2, html[lang="ar"] h3
 .guide-cta { margin-top: 3rem; padding: 2rem; border-radius: var(--ip-radius); background: linear-gradient(120deg, var(--ip-navy-900), #2a1f7a); color: #fff; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.25rem; box-shadow: var(--ip-shadow); }
 .guide-cta p { color: #c3c8e4; }
 @media (max-width: 991.98px) { .guide-chapters ol { max-height: none; } }
+
+/* Write-your-idea box */
+.idea-writer { border: 1px solid rgba(109, 94, 252, .25); }
+.idea-textarea { font-size: 1.05rem; line-height: 1.7; resize: vertical; min-height: 200px; }
+
+/* Node type badges outside the map (proposal previews) use the map's colours. */
+.type-badge[data-type-badge] { color: #fff; background: #64748b; }
+.type-badge[data-type-badge="goal"] { background: #059669; }
+.type-badge[data-type-badge="person"] { background: #ea580c; }
+.type-badge[data-type-badge="assumption"] { background: #f59e0b; color: #2b1a00; }
+.type-badge[data-type-badge="risk"] { background: #dc2626; }
+.type-badge[data-type-badge="resource"] { background: #0891b2; }
+.type-badge[data-type-badge="decision"] { background: #db2777; }
+.type-badge[data-type-badge="milestone"] { background: #ca8a04; }
+.type-badge[data-type-badge="task"] { background: #2563eb; }

@@ -4,9 +4,9 @@ const mongoose = require('mongoose');
 
 const aiConversationSchema = new mongoose.Schema(
   {
-    project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project', required: true },
+    project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project', default: null },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    kind: { type: String, enum: ['analysis', 'graph', 'roadmap', 'tasks', 'replan', 'chat'], required: true },
+    kind: { type: String, enum: ['analysis', 'graph', 'roadmap', 'tasks', 'replan', 'chat', 'idea', 'taskdraft'], required: true },
     prompt: { type: String, maxlength: 4000, default: '' },
     response: { type: String, maxlength: 20000, default: '' },
     status: { type: String, enum: ['succeeded', 'failed'], required: true },

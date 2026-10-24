@@ -11,12 +11,12 @@
       <h1 class="d-flex align-items-center gap-2 flex-wrap"><%= __(proposal.title) %>
         <span class="status-badge <%= proposal.status === 'accepted' ? 'status-completed' : proposal.status === 'rejected' ? 'status-blocked' : 'status-in_progress' %>"><%= pending ? __('Waiting for review') : fmt.label(proposal.status) %></span>
       </h1>
-      <p><%= __(proposal.origin === 'ai' ? 'Suggested by the IdeaPilot assistant' : 'Computed by IdeaPilot from your map and tasks') %> · <%= fmt.formatDateTime(proposal.createdAt) %></p>
+      <p><%= __(proposal.origin === 'ai' ? 'Organized by IdeaPilot from what you wrote' : 'Computed by IdeaPilot from your map and tasks') %> · <%= fmt.formatDateTime(proposal.createdAt) %></p>
     </div>
   </div>
 
   <% if (pending) { %>
-    <div class="alert alert-warning d-flex gap-2"><i data-lucide="shield-check" class="icon-sm mt-1"></i><div><%= __('Nothing has changed yet. Choose the items you want, then apply them.') %> <%= ['roadmap', 'tasks', 'replan'].includes(proposal.kind) ? __('Your current plan is saved as a version first, so you can restore it from History.') : '' %></div></div>
+    <div class="alert alert-warning d-flex gap-2"><i data-lucide="shield-check" class="icon-sm mt-1"></i><div><%= __('Nothing has changed yet. Choose the items you want, then apply them.') %> <%= ['roadmap', 'tasks', 'taskdraft', 'replan'].includes(proposal.kind) ? __('Your current plan is saved as a version first, so you can restore it from History.') : '' %></div></div>
   <% } else if (proposal.appliedSummary) { %>
     <div class="alert alert-success"><%= __(proposal.appliedSummary) %></div>
   <% } %>
@@ -54,7 +54,7 @@
         <% }) %>
         <% if (!p.nodes.length) { %><p class="small text-muted"><%= __('No new nodes.') %></p><% } %>
         <h2 class="h6 my-3"><%= __('New connections ({n})', { n: p.edges.length }) %></h2>
-        <% const titleOf = function (end) { if (end.kind === 'new') { const n = p.nodes.find(function (x) { return x.key === end.ref; }); return n ? n.title : '?'; } return __('existing node'); }; %>
+        <% const titleOf = function (end) { if (end.kind === 'new') { const n = p.nodes.find(function (x) { return x.key === end.ref; }); return n ? n.title : '?'; } return end.title || __('existing node'); }; %>
         <% p.edges.forEach(function (e, i) { %>
           <label class="proposal-item">
             <input class="form-check-input" type="checkbox" name="items" value="edge:<%= i %>" checked <%= dis %>>
@@ -109,6 +109,29 @@
             <div class="small"><span class="prio prio-<%= t.priority %>"><%= fmt.label(t.priority) %></span> <span class="fw-semibold"><%= t.title %></span><% if (t.description) { %><div><%= t.description %></div><% } %><div class="text-muted fst-italic"><%= t.reason %></div></div>
           </label>
         <% }) %>
+      </div>
+    <% } %>
+
+    <% if (proposal.kind === 'taskdraft') { %>
+      <div class="panel panel-body mb-3">
+        <h2 class="h6 mb-3"><%= __('New tasks ({n})', { n: p.tasks.length }) %></h2>
+        <% const phaseName = {}; (typeof phases !== 'undefined' ? phases : []).forEach(function (ph) { phaseName[String(ph._id)] = ph.title; }); %>
+        <% const nodeName = {}; (typeof nodes !== 'undefined' ? nodes : []).forEach(function (n) { nodeName[String(n._id)] = n.title; }); %>
+        <% p.tasks.forEach(function (t, i) { %>
+          <label class="proposal-item">
+            <input class="form-check-input" type="checkbox" name="items" value="task:<%= i %>" checked <%= dis %>>
+            <div class="small">
+              <span class="prio prio-<%= t.priority %>"><%= fmt.label(t.priority) %></span> <span class="fw-semibold"><%= t.title %></span>
+              <% if (t.description) { %><div><%= t.description %></div><% } %>
+              <div class="text-muted">
+                <% if (t.phaseId && phaseName[t.phaseId]) { %><span class="me-2"><i data-lucide="milestone" class="icon-xs"></i> <%= phaseName[t.phaseId] %></span><% } %>
+                <% if (t.linkedNode && nodeName[t.linkedNode]) { %><span class="me-2"><i data-lucide="network" class="icon-xs"></i> <%= nodeName[t.linkedNode] %></span><% } %>
+                <% if (t.dependsOn.length) { %><span><%= __('after') %> <%= t.dependsOn.map(function (k) { const d = p.tasks.find(function (x) { return x.key === k; }); return d ? d.title : k; }).join(', ') %></span><% } %>
+              </div>
+            </div>
+          </label>
+        <% }) %>
+        <% if (p.droppedDeps) { %><p class="small text-muted mb-0"><%= __('{n} dependency link(s) were invalid or circular and were removed.', { n: p.droppedDeps }) %></p><% } %>
       </div>
     <% } %>
 
