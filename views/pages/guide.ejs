@@ -2,15 +2,13 @@
 <%
   const chapters = [
     { t: 0, icon: 'languages', title: 'Switch to Arabic and tour the home page' },
-    { t: 17, icon: 'user-plus', title: 'Create an account' },
-    { t: 28, icon: 'lightbulb', title: 'Add a new idea' },
-    { t: 37, icon: 'network', title: 'Build the idea map' },
-    { t: 79, icon: 'scan-search', title: 'Analyze the idea' },
-    { t: 92, icon: 'milestone', title: 'Plan phases, milestones and tasks' },
-    { t: 117, icon: 'kanban', title: 'Track tasks in a list and on the board' },
-    { t: 138, icon: 'refresh-cw', title: 'Replan when an assumption changes' },
-    { t: 158, icon: 'history', title: 'History and plan versions' },
-    { t: 163, icon: 'sparkles', title: 'Ask the IdeaPilot assistant' },
+    { t: 14, icon: 'user-plus', title: 'Create an account' },
+    { t: 24, icon: 'wand-sparkles', title: 'Write your idea in your own words' },
+    { t: 51, icon: 'network', title: 'See it drawn as a map' },
+    { t: 65, icon: 'scan-search', title: 'The analysis fills itself in' },
+    { t: 71, icon: 'milestone', title: 'A ready-made roadmap, plus a stage you write' },
+    { t: 93, icon: 'list-checks', title: 'Write your tasks and track them' },
+    { t: 116, icon: 'clipboard-check', title: 'Review your idea and tasks' },
   ];
   const clock = (s) => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
 %>
@@ -18,8 +16,8 @@
   <div class="container">
     <div class="section-head text-center mx-auto guide-head">
       <span class="hero-badge"><i data-lucide="play-circle" class="icon-xs"></i> <%= __('Video guide') %></span>
-      <h1 class="hero-title guide-title"><%= __('Learn IdeaPilot in 3 minutes') %></h1>
-      <p class="hero-lead mx-auto"><%= __('Follow one real example from start to finish: a small home bakery goes from a first idea to a map, a plan, tasks and a changed plan. The video has Arabic captions.') %></p>
+      <h1 class="hero-title guide-title"><%= __('Learn IdeaPilot in 2 minutes') %></h1>
+      <p class="hero-lead mx-auto"><%= __('Follow one real example from start to finish: a small home bakery is written in plain words and becomes a map, a roadmap, tasks and a simple review. The video has Arabic captions.') %></p>
     </div>
 
     <div class="row g-4 align-items-start guide-player-row">
@@ -60,10 +58,10 @@
     <div class="row g-4">
       <% [
         { icon: 'network', title: 'Map the idea', text: 'Add goals, assumptions, risks and resources, connect them, and drag them into place. Everything saves on its own.' },
-        { icon: 'scan-search', title: 'See it clearly', text: 'Pull the map into an analysis with a summary, goals, assumptions and risks in one place.' },
-        { icon: 'milestone', title: 'Turn it into a plan', text: 'Create phases, milestones and tasks with priorities, deadlines and tasks that must finish first.' },
+        { icon: 'scan-search', title: 'See it clearly', text: 'Your goals, assumptions and risks from the map fill the analysis automatically.' },
+        { icon: 'milestone', title: 'Turn it into a plan', text: 'Get a ready-made roadmap with your idea, or describe your stages and IdeaPilot turns them into phases and tasks.' },
         { icon: 'kanban', title: 'Get it done', text: 'Change a task’s status from the list or drag its card across the board.' },
-        { icon: 'refresh-cw', title: 'Adapt when things change', text: 'Mark an assumption as wrong and review a proposed new plan before anything changes.' },
+        { icon: 'clipboard-check', title: 'Review it simply', text: 'One page shows your idea, your tasks, what comes next and what needs your attention.' },
         { icon: 'wand-sparkles', title: 'Just write it', text: 'Describe your idea or your tasks in your own words, and IdeaPilot organizes them for you to review.' },
       ].forEach(function (f) { %>
         <div class="col-md-6 col-lg-4">
